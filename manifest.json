@@ -1,0 +1,14 @@
+{
+  "name": "Majsan och Stinis spelhörna",
+  "short_name": "Spelhörnan",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1ecff",
+  "theme_color": "#f1ecff",
+  "lang": "sv",
+  "icons": [
+    { "src": "ikoner/ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ikoner/ikon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

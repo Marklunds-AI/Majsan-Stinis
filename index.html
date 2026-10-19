@@ -6,6 +6,14 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Majsan och Stinis spelhörna</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+<!-- Gör att sidan kan läggas på hemskärmen som en app -->
+<link rel="apple-touch-icon" href="ikoner/ikon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Spelhörnan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f1ecff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -144,7 +152,24 @@ header p{margin:0; font-size:clamp(18px,3vw,22px); color:var(--muted); font-weig
     radial-gradient(circle at 85% 80%,rgba(255,255,255,.25) 0 22%,transparent 23%),
     linear-gradient(135deg,color-mix(in srgb,var(--c) 55%,#fff),var(--c));
 }
-.media img{width:100%; height:100%; object-fit:cover; display:block}
+.media img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease}
+.card:hover .media img{transform:scale(1.06)}
+/* Liten emoji-"klistermärke" i hörnet när kortet har en bild */
+.sticker{
+  position:absolute; right:10px; bottom:10px; width:50px; height:50px;
+  display:grid; place-items:center; font-size:28px; line-height:1;
+  background:#fff; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,.2);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.card:hover .sticker{transform:scale(1.15) rotate(-10deg)}
+/* "Nytt!"-märke för nya spel */
+.new{
+  position:absolute; top:12px; right:12px;
+  background:var(--rosa); color:#fff; font-size:14px; font-weight:700;
+  padding:5px 12px; border-radius:999px; box-shadow:0 3px 10px rgba(0,0,0,.18);
+  animation:wiggle 1.6s ease-in-out infinite;
+}
+@keyframes wiggle{0%,100%{transform:rotate(-4deg) scale(1)} 50%{transform:rotate(4deg) scale(1.08)}}
 .media .emoji{font-size:84px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.18)); transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
 .card:hover .media .emoji{transform:scale(1.15) rotate(-8deg)}
 
@@ -160,8 +185,9 @@ header p{margin:0; font-size:clamp(18px,3vw,22px); color:var(--muted); font-weig
 .body{display:flex; flex-direction:column; gap:8px; padding:16px 8px 6px; flex:1}
 .body h2{margin:0; font-size:26px; font-weight:700; line-height:1.15}
 .body p{margin:0; font-size:17px; line-height:1.4; color:var(--muted); flex:1}
-.controls{
-  align-self:flex-start; font-size:14px; font-weight:600; color:var(--ink);
+.tags{display:flex; flex-wrap:wrap; gap:6px}
+.controls,.age{
+  font-size:14px; font-weight:600; color:var(--ink);
   background:color-mix(in srgb,var(--c) 16%,transparent); padding:5px 12px; border-radius:999px;
 }
 .play{
@@ -234,7 +260,7 @@ footer{text-align:center; color:var(--muted); font-size:16px; padding:40px 16px 
   <p class="empty hidden" id="tom">Hittade inga spel 🙈 Prova att söka på något annat!</p>
 </main>
 
-<footer>Gjort med 💜 av Majsan och Stini</footer>
+<footer>Gjort med 💜 av Majsan och Stinis</footer>
 
 <!-- Listan med spel finns i filen spel.js -->
 <script src="spel.js"></script>
@@ -245,7 +271,7 @@ footer{text-align:center; color:var(--muted); font-size:16px; padding:40px 16px 
 const FARGER = ["gul","gron","bla","rosa","lila","orange","turkos"];
 const SKAPARE = {
   majsan:      "🎨 Majsan",
-  stini:       "🚀 Stini",
+  stinis:      "🚀 Stinis",
   tillsammans: "🤝 Tillsammans",
 };
 
@@ -320,9 +346,22 @@ function el(tag, klass, text){
 
 const kanHovra = matchMedia("(hover: hover)").matches;
 
+// Vem som gjort spelet ("stini" fungerar också, för säkerhets skull)
+function skapareFor(spel){
+  const s = spel.skapare === "stini" ? "stinis" : spel.skapare;
+  return SKAPARE[s] ? s : "tillsammans";
+}
+
+// Är spelet nytt? (tillagt de senaste 30 dagarna)
+function arNytt(spel){
+  if (!spel.tillagd) return false;
+  const dagar = (Date.now() - new Date(spel.tillagd).getTime()) / 86400000;
+  return dagar >= 0 && dagar <= 30;
+}
+
 SPEL.forEach((spel, i) => {
   const farg = FARGER.includes(spel.farg) ? spel.farg : FARGER[i % FARGER.length];
-  const skapare = SKAPARE[spel.skapare] ? spel.skapare : "tillsammans";
+  const skapare = skapareFor(spel);
 
   const kort = el("a", "card c-" + farg);
   kort.href = "spel/" + spel.fil;
@@ -338,17 +377,25 @@ SPEL.forEach((spel, i) => {
     img.alt = "";
     img.loading = "lazy";
     // Om bilden inte går att ladda visas emojin i stället
-    img.onerror = () => { img.remove(); media.prepend(el("span", "emoji", spel.ikon || "🎲")); };
-    media.append(img);
+    img.onerror = () => {
+      img.remove();
+      media.querySelector(".sticker")?.remove();
+      media.prepend(el("span", "emoji", spel.ikon || "🎲"));
+    };
+    media.append(img, el("span", "sticker", spel.ikon || "🎲"));
   } else {
     media.append(el("span", "emoji", spel.ikon || "🎲"));
   }
   media.append(el("span", "author", SKAPARE[skapare]));
+  if (arNytt(spel)) media.append(el("span", "new", "✨ Nytt!"));
 
   // Text, styrning och knapp
   const kropp = el("div", "body");
   kropp.append(el("h2", "", spel.namn), el("p", "", spel.beskrivning || ""));
-  if (spel.styrning) kropp.append(el("span", "controls", spel.styrning));
+  const taggar = el("div", "tags");
+  if (spel.styrning) taggar.append(el("span", "controls", spel.styrning));
+  if (spel.alder) taggar.append(el("span", "age", "🎂 " + spel.alder));
+  if (taggar.children.length) kropp.append(taggar);
   kropp.append(el("span", "play", "Spela ▶"));
 
   kort.append(media, kropp);
@@ -371,7 +418,7 @@ SPEL.forEach((spel, i) => {
    FILTER PÅ SKAPARE
    Knapparna visas bara om spelen har olika skapare.
    ========================================================= */
-const finns = [...new Set(SPEL.map(s => SKAPARE[s.skapare] ? s.skapare : "tillsammans"))];
+const finns = [...new Set(SPEL.map(skapareFor))];
 if (finns.length > 1) {
   const val = [["alla", "✨ Alla spel"], ...Object.keys(SKAPARE).filter(k => finns.includes(k)).map(k => [k, SKAPARE[k]])];
   val.forEach(([nyckel, text]) => {

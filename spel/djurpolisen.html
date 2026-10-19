@@ -2,99 +2,80 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Djurpolisen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #d1fae5;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 { color: #065f46; margin-bottom: 5px; }
-        #gameContainer {
-            position: relative;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        canvas {
-            background-color: #4b5563;
-            border: 4px solid #1f2937;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.3);
-        }
-        #ui {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #111;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .ui-box {
-            background-color: #a7f3d0;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 2px solid #059669;
-        }
-        select {
-            font-size: 16px;
-            padding: 2px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        #gameOverScreen {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            width: 80%;
-            max-width: 300px;
-            z-index: 10;
-        }
-        #gameOverScreen h2 {
-            margin-top: 0;
-            color: #dc2626;
-            font-size: 28px;
-        }
-        #gameOverScreen p {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .restart-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 24px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            background-color: #10b981;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-        }
-        .restart-btn:hover {
-            background-color: #059669;
-            transform: scale(1.05);
+        /* ---------- Färger (samma glada stil som spelhörnan) ---------- */
+        :root {
+            --ink: #2a2150;
+            --muted: #6b6296;
+            --card: #ffffff;
+            --gron: #34c77b;
+            --gron-mork: #21995a;
+            --bla: #4f8cff;
+            --bla-mork: #2f63c9;
+            --rosa: #ff5fa2;
+            --shadow: rgba(52, 140, 90, .22);
         }
 
-        /* Pilknappar för surfplatta/mobil */
+        /* ---------- Grund ---------- */
+        * { box-sizing: border-box; }
         body {
+            font-family: 'Fredoka', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(160deg, #e3fbef, #e2efff) fixed;
+            background-color: #e3fbef;
+            text-align: center;
+            margin: 0;
+            padding: 16px 16px 24px;
+            min-height: 100vh;
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+        }
+        h1 {
+            margin: 4px 0 10px;
+            font-size: clamp(30px, 6vw, 44px);
+            font-weight: 700;
+            color: var(--gron-mork);
+            text-shadow: 0 3px 0 #ffc23d;
+        }
+
+        /* ---------- Poäng och svårighet ---------- */
+        #ui {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .ui-box {
+            background: var(--card);
+            padding: 8px 16px;
+            border-radius: 999px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        .ui-box span { color: var(--gron-mork); font-weight: 700; }
+        select {
+            font: inherit;
+            font-size: 16px;
+            color: var(--ink);
+            padding: 2px 6px;
+            border: 2px solid #d6f3e3;
+            border-radius: 999px;
+            background: #f3fcf7;
+        }
+
+        /* ---------- Vägen ---------- */
+        #gameContainer {
+            position: relative;
+            display: inline-block;
         }
         canvas {
             display: block;
@@ -103,30 +84,80 @@
             max-height: calc(100vh - 290px);
             max-height: calc(100dvh - 290px);
             min-height: 300px;
+            background-color: #4b5563;
+            border: 6px solid #fff;
+            border-radius: 24px;
+            box-shadow: 0 14px 30px var(--shadow);
         }
+
+        /* ---------- Krock-rutan ---------- */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            max-width: 300px;
+            padding: 24px 22px;
+            background: var(--card);
+            border-radius: 26px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+            z-index: 10;
+            animation: popin .35s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        @keyframes popin { from { transform: translate(-50%, -50%) scale(.6); opacity: 0; } }
+        #gameOverScreen h2 {
+            margin: 0 0 6px;
+            font-size: 32px;
+            color: var(--rosa);
+        }
+        #gameOverScreen p {
+            margin: 8px 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        #gameOverScreen p span { font-weight: 700; color: var(--gron-mork); }
+        .restart-btn {
+            margin-top: 14px;
+            padding: 12px 28px;
+            font: inherit;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            background: var(--gron);
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 6px 0 var(--gron-mork);
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .restart-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--gron-mork); }
+        .restart-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--gron-mork); }
+
+        /* ---------- Pilknappar för surfplatta/mobil ---------- */
         #controls {
             display: flex;
             justify-content: center;
             gap: 40px;
-            margin-top: 14px;
+            margin-top: 16px;
         }
         .arrow-btn {
             width: 110px;
             height: 80px;
-            font-size: 44px;
-            font-weight: bold;
+            font-size: 40px;
             color: white;
-            background-color: #1d4ed8;
-            border: 4px solid #1f2937;
-            border-radius: 18px;
-            box-shadow: 0 6px 0 #1f2937;
+            background: var(--bla);
+            border: none;
+            border-radius: 22px;
+            box-shadow: 0 7px 0 var(--bla-mork);
             cursor: pointer;
             touch-action: none;
+            transition: transform .08s, box-shadow .08s;
         }
         .arrow-btn.down {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #1f2937;
-            background-color: #1e40af;
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 var(--bla-mork);
         }
     </style>
 </head>
@@ -380,5 +411,6 @@
         gameLoop();
 
     </script>
+<script src="../tillbaka.js" data-pos="bottom-left"></script>
 </body>
 </html>

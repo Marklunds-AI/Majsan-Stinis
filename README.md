@@ -10,6 +10,9 @@ Den här guiden visas också på GitHub, så du kan alltid gå tillbaka hit.
 | `index.html` | Startsidan med alla spelkort | Nej |
 | `spel.js` | **Listan med spel** (namn, ikon, beskrivning) | **Ja – när du lägger till spel** |
 | `spel/` | Mappen där själva spelfilerna ligger | Ja – lägg nya spel här |
+| `bilder/` | Bilderna på spelkorten | Ja – om nya spel ska ha bild |
+| `tillbaka.js` | Hem-knappen 🏠 som finns i alla spel | Nej |
+| `ikoner/`, `manifest.json` | App-ikonen när sidan läggs på hemskärmen | Nej |
 | `README.md` | Den här guiden | Nej |
 
 ---
@@ -50,11 +53,21 @@ Det är den länken du delar. 🎉
 
 1. **Ge spelfilen ett enkelt namn** på din dator, t.ex. `rymdkatten.html`
    (små bokstäver, inga mellanslag, inga å/ä/ö).
-2. **Ladda upp spelet:** gå till ditt repository på GitHub → klicka på mappen **spel**
+2. **Lägg till hem-knappen 🏠** (valfritt men bra): öppna spelfilen och klistra in den här
+   raden precis före `</body>` längst ner:
+
+   ```html
+   <script src="../tillbaka.js" data-pos="bottom-left"></script>
+   ```
+
+   `data-pos` väljer hörn: `bottom-left`, `bottom-right`, `top-left`, `top-right`
+   eller `bottom-center`. Välj ett hörn där knappen inte skymmer spelet.
+   Det enklaste är att be Claude göra det.
+3. **Ladda upp spelet:** gå till ditt repository på GitHub → klicka på mappen **spel**
    → **Add file** → **Upload files** → dra in filen → **Commit changes**.
-3. **Lägg till spelet i listan:** gå tillbaka till startsidan av ditt repository →
+4. **Lägg till spelet i listan:** gå tillbaka till startsidan av ditt repository →
    klicka på **spel.js** → klicka på pennan ✏️ (Edit) uppe till höger.
-4. Kopiera ett av de befintliga blocken och klistra in det sist i listan, före `];`. Exempel:
+5. Kopiera ett av de befintliga blocken och klistra in det sist i listan, före `];`. Exempel:
 
    ```js
      {
@@ -62,19 +75,24 @@ Det är den länken du delar. 🎉
        fil: "rymdkatten.html",
        ikon: "🐱",
        farg: "lila",
-       skapare: "stini",
+       skapare: "stinis",
        beskrivning: "Styr katten genom rymden och samla stjärnor.",
        styrning: "👆 Tryck och dra",
+       alder: "6–10 år",
+       tillagd: "2026-11-02",
      },
    ```
 
    - `farg` kan vara: `gul`, `gron`, `bla`, `rosa`, `lila`, `orange`, `turkos`
-   - `skapare` kan vara: `majsan`, `stini` eller `tillsammans`.
+   - `skapare` kan vara: `majsan`, `stinis` eller `tillsammans`.
      Den syns som en etikett i hörnet av kortet.
    - `styrning` är en kort text om hur man styr, t.ex. `⌨️ Piltangenter`.
+   - `alder` är vilken ålder spelet passar, t.ex. `4–7 år` eller `Alla åldrar`.
+   - `tillagd` är dagens datum (år-månad-dag). Då får kortet ett **✨ Nytt!**-märke
+     som försvinner av sig självt efter 30 dagar.
    - Vill du ha en **bild på kortet** i stället för emojin? Lägg bilden i en mapp
      som heter `bilder` och lägg till raden `bild: "bilder/rymdkatten.png",`.
-5. Klicka **Commit changes**. Efter en minut syns spelet på sidan.
+6. Klicka **Commit changes**. Efter en minut syns spelet på sidan.
 
 När spelen har olika skapare dyker det automatiskt upp knappar under sökfältet,
 så att man kan visa bara Majsans eller bara Stinis spel.
@@ -97,7 +115,22 @@ Vill du byta namn på hela sidan? Ändra `SIDANS_NAMN` högst upp i `spel.js`.
   GitHub-konto. Lägg därför aldrig in personuppgifter, namn på elever eller
   liknande i spelen.
 
+## Lägg spelhörnan som en app på iPad 📱
+
+1. Öppna <https://marklunds-ai.github.io/Majsan-Stinis/> i **Safari** på iPaden.
+2. Tryck på **dela-knappen** (fyrkanten med en pil uppåt ⬆️). Den sitter uppe till höger
+   eller i adressfältet.
+3. Bläddra ner och tryck **Lägg till på hemskärmen**.
+4. Tryck **Lägg till** uppe till höger.
+
+Nu finns en 🎮-ikon som heter **Spelhörnan** bland apparna. Den öppnas i helskärm,
+utan adressfält. I spelen kommer man tillbaka till startsidan med 🏠-knappen.
+
+> **Obs!** Appen på hemskärmen och Safari sparar spelen var för sig. Framsteg
+> man gjort i Safari syns alltså inte i appen (och tvärtom). Välj ett sätt att
+> spela på och håll er till det.
+
 ## Bra att veta om sparade spel
-Hunddagiset sparar spelarens framsteg i webbläsaren. Det betyder att
+Flera av spelen sparar framstegen i webbläsaren. Det betyder att
 framstegen finns kvar på samma dator/surfplatta och i samma webbläsare,
 men följer inte med till en annan enhet.
