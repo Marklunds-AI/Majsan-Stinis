@@ -1,0 +1,792 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bokstavsjakten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Lilita+One&display=swap">
+<style>
+/* Layout: full-bleed side-scroller canvas, HTML HUD on top, storybook card overlays. Single bright daytime look by choice. */
+:root{
+  --sky:#9ad8f2;
+  --ink:#1f2f5c;
+  --ink-soft:#4a5a86;
+  --sun:#ffc93c;
+  --grass:#4fb447;
+  --coat:#e9573a;
+  --paper:#fdfcf7;
+  --line:#c9d6ea;
+  --good:#2f9e44;
+  --bad:#d6336c;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  --body:"Andika","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--sky);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-user-select:none;user-select:none}
+#app{position:fixed;inset:0;touch-action:none}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block}
+button{font-family:var(--body);color:var(--ink);cursor:pointer}
+button:focus-visible{outline:3px solid var(--coat);outline-offset:2px}
+
+/* HUD */
+#hud{position:absolute;left:0;right:0;top:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;pointer-events:none}
+#hud > *{pointer-events:auto}
+.target{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:999px;padding:6px 8px 6px 6px;box-shadow:0 3px 0 rgba(31,47,92,.18)}
+.target .bubble{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font:700 44px/1 var(--body);background:radial-gradient(circle at 35% 30%,#fff 0 30%,#e4f4ff 70%);border:3px solid var(--ink);color:var(--ink)}
+.target .hint{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.target .hint small{font-size:13px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase}
+.target .word{font-size:22px;white-space:nowrap}
+.target .word b{color:var(--coat)}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:none;background:var(--sun);display:grid;place-items:center;box-shadow:0 3px 0 rgba(31,47,92,.25)}
+.iconbtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(31,47,92,.25)}
+.iconbtn svg{width:24px;height:24px}
+.iconbtn.off{background:#e3e6ee}
+.right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:var(--paper);border-radius:999px;padding:6px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 3px 0 rgba(31,47,92,.18);font-weight:700}
+.slots{display:flex;gap:5px}
+.slot{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink);background:#fff}
+.slot.on{background:var(--sun)}
+.hearts{color:var(--bad);font-size:22px;letter-spacing:2px;line-height:1}
+.hearts .lost{color:#d5d9e3}
+.lvl{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.02em}
+
+/* Touch controls */
+#touch{position:absolute;left:0;right:0;bottom:0;display:none;justify-content:space-between;align-items:flex-end;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));pointer-events:none}
+#touch.show{display:flex}
+#touch .grp{display:flex;gap:14px;pointer-events:auto}
+.tbtn{width:78px;height:78px;border-radius:50%;border:3px solid rgba(31,47,92,.5);background:rgba(253,252,247,.75);display:grid;place-items:center;touch-action:none}
+.tbtn.down{background:var(--sun)}
+.tbtn svg{width:36px;height:36px}
+.tbtn.jump{width:96px;height:96px}
+
+/* Overlays */
+.overlay{position:absolute;inset:0;display:grid;place-items:center;padding:16px;background:rgba(31,47,92,.35);overflow:auto}
+.card{background:var(--paper);border-radius:24px;padding:24px;width:100%;max-width:640px;box-shadow:0 8px 0 rgba(31,47,92,.25);display:flex;flex-direction:column;gap:16px;max-height:calc(100% - 8px);overflow:auto}
+.card h1,.card h2{font-family:var(--display);font-weight:400;margin:0;line-height:1.05;text-wrap:balance;color:var(--ink)}
+.card h1{font-size:clamp(36px,7vw,56px)}
+.card h1 span{color:var(--coat)}
+.card h2{font-size:clamp(28px,5vw,40px)}
+.card p{margin:0;font-size:17px;line-height:1.5;max-width:60ch}
+.label{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.section{display:flex;flex-direction:column;gap:8px}
+.presets,.seg{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:15px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.wordin{width:100%;font:700 20px/1.3 var(--body);color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 12px}
+.wordin:focus{outline:3px solid var(--coat);outline-offset:1px}
+.word .done{color:var(--ink)}
+.word .cur{color:var(--coat);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.word .rest{color:#b4bccf}
+.lt{aspect-ratio:1;border-radius:12px;border:2px solid var(--line);background:#fff;font:700 22px/1 var(--body);color:var(--ink-soft)}
+.lt[aria-pressed="true"]{background:var(--sun);border-color:var(--ink);color:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.big{font-family:var(--display);font-size:26px;letter-spacing:.02em;border:none;border-radius:18px;padding:12px 28px;background:var(--coat);color:#fff;box-shadow:0 5px 0 #a8341d}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #a8341d}
+.big:disabled{background:#c9ccd6;box-shadow:0 5px 0 #9a9fb0;cursor:not-allowed}
+.ghost{border:2px solid var(--ink);background:transparent;border-radius:18px;padding:10px 20px;font-size:17px;font-weight:700}
+.note{font-size:14px;color:var(--ink-soft)}
+kbd{font-family:var(--body);border:1.5px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;background:#fff;font-size:13px}
+.stars{font-size:48px;letter-spacing:6px;color:var(--sun);text-shadow:0 2px 0 #c58f00}
+.stars .dim{color:#dfe3ec;text-shadow:none}
+.stat{font-size:20px;font-variant-numeric:tabular-nums}
+#rotate{position:absolute;left:16px;right:16px;bottom:calc(120px + env(safe-area-inset-bottom,0px));display:none;text-align:center;background:var(--paper);border-radius:14px;padding:8px 12px;font-size:15px;pointer-events:none}
+@media (orientation:portrait) and (max-width:640px){#rotate.ingame{display:block}}
+@media (max-width:560px){.target:not(.words) .hint{display:none}.target.words .hint small{display:none}.target .bubble{width:54px;height:54px;font-size:36px}.pill{padding:5px 9px}.slot{width:14px;height:14px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+  <canvas id="game" aria-label="Spelplan"></canvas>
+
+  <div id="hud" hidden>
+    <div class="target">
+      <div class="bubble" id="tLetter">M</div>
+      <div class="hint">
+        <small id="tLabel">Fånga</small>
+        <span class="word" id="tWord"></span>
+      </div>
+      <button class="iconbtn" id="btnSay" aria-label="Lyssna på bokstaven">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1f2f5c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="#1f2f5c"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      </button>
+    </div>
+    <div class="right">
+      <div class="pill"><span class="lvl" id="lvl">Bana 1</span><div class="slots" id="slots"></div></div>
+      <div class="pill" id="heartPill"><span class="hearts" id="hearts"></span></div>
+      <button class="iconbtn" id="btnSound" aria-label="Ljud på/av">
+        <svg viewBox="0 0 24 24" fill="#1f2f5c"><path d="M9 4v11.5A3.5 3.5 0 1 0 11 18V8.5l8-2v7A3.5 3.5 0 1 0 21 16V2z"/><path id="soundWave" d="M3 3l18 18" stroke="#d6336c" stroke-width="3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="iconbtn" id="btnPause" aria-label="Pausa">
+        <svg viewBox="0 0 24 24" fill="#1f2f5c"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="touch">
+    <div class="grp">
+      <button class="tbtn" id="tLeft" aria-label="Gå vänster"><svg viewBox="0 0 24 24" fill="#1f2f5c"><path d="M15 4 6 12l9 8z"/></svg></button>
+      <button class="tbtn" id="tRight" aria-label="Gå höger"><svg viewBox="0 0 24 24" fill="#1f2f5c"><path d="M9 4l9 8-9 8z"/></svg></button>
+    </div>
+    <div class="grp">
+      <button class="tbtn jump" id="tJump" aria-label="Hoppa"><svg viewBox="0 0 24 24" fill="#1f2f5c"><path d="M12 3 3 13h5v8h8v-8h5z"/></svg></button>
+    </div>
+  </div>
+  <div id="rotate">Vrid plattan eller telefonen så blir spelet större.</div>
+
+  <!-- Startmeny -->
+  <div class="overlay" id="menu">
+    <div class="card">
+      <h1>Bokstavs<span>jakten</span></h1>
+      <p>Spring genom landskapet, hoppa över stenar och fånga bubblan med rätt bokstav. Lyssna på ljudet och leta!</p>
+
+      <div class="section">
+        <span class="label">Spelsätt</span>
+        <div class="seg" id="gameSeg">
+          <button class="chip" data-game="letters">Fånga bokstaven</button>
+          <button class="chip" data-game="words">Stava ord</button>
+        </div>
+      </div>
+
+      <div class="section" id="secWords">
+        <label class="label" for="wordInput">Ord att stava (skilj med komma)</label>
+        <input class="wordin" id="wordInput" type="text" autocomplete="off" spellcheck="false">
+        <span class="note" id="wordNote">Man fångar bokstäverna i rätt ordning. Tre ord per bana.</span>
+      </div>
+
+      <div class="section" id="secLetters">
+        <span class="label">Vilka bokstäver ska vi öva på?</span>
+        <div class="presets" id="presets"></div>
+        <div class="grid" id="letterGrid"></div>
+      </div>
+
+      <div class="section">
+        <span class="label">Svårighet</span>
+        <div class="seg" id="diffSeg">
+          <button class="chip" data-diff="easy">Easymode – inga hål, sniglar eller fel</button>
+          <button class="chip" data-diff="normal">Vanlig – med hjärtan</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">Visa bokstäverna som</span>
+        <div class="seg" id="modeSeg">
+          <button class="chip" data-mode="upper">STORA</button>
+          <button class="chip" data-mode="lower">små</button>
+          <button class="chip" data-mode="match">Stor → liten</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="big" id="btnStart">Starta</button>
+        <span class="note" id="bestNote"></span>
+      </div>
+      <p class="note">Gå med <kbd>←</kbd> <kbd>→</kbd> och hoppa med <kbd>mellanslag</kbd> eller <kbd>↑</kbd>. På plattan finns knappar på skärmen. I vanligt läge: hoppa på sniglarna, men gå inte in i dem! I Easymode kan man inte förlora, och fel bokstäver flyger bara undan.</p>
+    </div>
+  </div>
+
+  <!-- Paus -->
+  <div class="overlay" id="pause" hidden>
+    <div class="card" style="max-width:420px">
+      <h2>Paus</h2>
+      <div class="actions">
+        <button class="big" id="btnResume">Fortsätt</button>
+        <button class="ghost" id="btnToMenu1">Till menyn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bana klar -->
+  <div class="overlay" id="done" hidden>
+    <div class="card" style="max-width:460px">
+      <h2 id="doneTitle">Bana 1 klar!</h2>
+      <div class="stars" id="doneStars"></div>
+      <p class="stat" id="doneStat"></p>
+      <div class="actions">
+        <button class="big" id="btnNext">Nästa bana</button>
+        <button class="ghost" id="btnToMenu2">Till menyn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slut -->
+  <div class="overlay" id="over" hidden>
+    <div class="card" style="max-width:460px">
+      <h2>Slut på hjärtan</h2>
+      <p class="stat" id="overStat"></p>
+      <div class="actions">
+        <button class="big" id="btnAgain">Spela igen</button>
+        <button class="ghost" id="btnToMenu3">Till menyn</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ Bokstavsdata ============
+   sound = det som talsyntesen säger som "ljud" (kan justeras), word/pic = exempelord.  */
+const LETTERS = [
+  {u:'A',sound:'a',word:'apa',pic:'🐒'},
+  {u:'B',sound:'bö',word:'boll',pic:'⚽'},
+  {u:'C',sound:'sss',word:'cykel',pic:'🚲'},
+  {u:'D',sound:'dö',word:'drake',pic:'🐉'},
+  {u:'E',sound:'e',word:'elefant',pic:'🐘'},
+  {u:'F',sound:'fff',word:'fisk',pic:'🐟'},
+  {u:'G',sound:'gö',word:'groda',pic:'🐸'},
+  {u:'H',sound:'hhh',word:'häst',pic:'🐴'},
+  {u:'I',sound:'i',word:'igelkott',pic:'🦔'},
+  {u:'J',sound:'jjj',word:'jordgubbe',pic:'🍓'},
+  {u:'K',sound:'kö',word:'katt',pic:'🐱'},
+  {u:'L',sound:'lll',word:'lejon',pic:'🦁'},
+  {u:'M',sound:'mmm',word:'mus',pic:'🐭'},
+  {u:'N',sound:'nnn',word:'näsa',pic:'👃'},
+  {u:'O',sound:'o',word:'orm',pic:'🐍'},
+  {u:'P',sound:'pö',word:'päron',pic:'🍐'},
+  {u:'Q',sound:'ku',word:'quiz',pic:'❓'},
+  {u:'R',sound:'rrr',word:'räv',pic:'🦊'},
+  {u:'S',sound:'sss',word:'sol',pic:'☀️'},
+  {u:'T',sound:'tö',word:'tåg',pic:'🚂'},
+  {u:'U',sound:'u',word:'uggla',pic:'🦉'},
+  {u:'V',sound:'vvv',word:'vante',pic:'🧤'},
+  {u:'W',sound:'vvv',word:'wok',pic:'🥘'},
+  {u:'X',sound:'ks',word:'xylofon',pic:'🎵'},
+  {u:'Y',sound:'y',word:'yxa',pic:'🪓'},
+  {u:'Z',sound:'sss',word:'zebra',pic:'🦓'},
+  {u:'Å',sound:'å',word:'åska',pic:'⛈️'},
+  {u:'Ä',sound:'ä',word:'ägg',pic:'🥚'},
+  {u:'Ö',sound:'ö',word:'öra',pic:'👂'},
+];
+const BY = Object.fromEntries(LETTERS.map(l=>[l.u,l]));
+const PRESETS = [
+  {name:'Vokaler', set:'AEIOUYÅÄÖ'},
+  {name:'Första bokstäverna', set:'AMSOLIRE'},
+  {name:'Lätta att blanda ihop', set:'BDPQ'},
+  {name:'Å Ä Ö', set:'ÅÄÖAO'},
+  {name:'Hela alfabetet', set:LETTERS.map(l=>l.u).join('')},
+];
+// Bokstäver som ofta förväxlas – används som "luriga" felalternativ
+const CONFUSE = {B:'DP',D:'BP',P:'BDQ',Q:'PO',M:'NW',W:'MV',N:'MU',U:'NV',E:'F',F:'E',O:'ÖQ',Ö:'O',A:'ÅÄ',Å:'AÄ',Ä:'AÅ',I:'LJ',L:'I',J:'I',V:'YU',Y:'V',S:'Z',Z:'S',C:'O',G:'C'};
+
+/* ============ Inställningar ============ */
+const store = {
+  get(k,d){try{const v=localStorage.getItem('bj_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('bj_'+k,JSON.stringify(v))}catch(e){}}
+};
+let selected = new Set(store.get('letters','AMSOLIRE'.split('')));
+let mode = store.get('mode','upper');
+let diff = store.get('diff','normal');
+let game = store.get('game','letters');
+let wordText = store.get('words','Stina, mus, sol, katt, apa, orm, bil, glass');
+let wordQueue=[], word='', wIdx=0;
+function validWords(){ return wordText.split(/[,\n]+/).map(w=>w.trim().replace(/\s+/g,'')).filter(Boolean)
+  .filter(w=>w.toUpperCase().split('').every(c=>BY[c])); }
+function invalidWords(){ return wordText.split(/[,\n]+/).map(w=>w.trim().replace(/\s+/g,'')).filter(Boolean)
+  .filter(w=>!w.toUpperCase().split('').every(c=>BY[c])); }
+const goal=()=> game==='words'?3:5;
+let best = store.get('best',0);
+let soundOn = store.get('sound',true);
+
+const $ = id=>document.getElementById(id);
+function buildMenu(){
+  const pre=$('presets'); pre.innerHTML='';
+  PRESETS.forEach(p=>{const b=document.createElement('button');b.className='chip';b.textContent=p.name;
+    b.onclick=()=>{selected=new Set(p.set.split(''));syncMenu()};pre.appendChild(b)});
+  const g=$('letterGrid'); g.innerHTML='';
+  LETTERS.forEach(l=>{const b=document.createElement('button');b.className='lt';b.id='lt_'+l.u;b.textContent=l.u;
+    b.onclick=()=>{selected.has(l.u)?selected.delete(l.u):selected.add(l.u);syncMenu()};g.appendChild(b)});
+  document.querySelectorAll('#modeSeg .chip').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;syncMenu()});
+  document.querySelectorAll('#diffSeg .chip').forEach(b=>b.onclick=()=>{diff=b.dataset.diff;syncMenu()});
+  document.querySelectorAll('#gameSeg .chip').forEach(b=>b.onclick=()=>{game=b.dataset.game;syncMenu()});
+  $('wordInput').value=wordText;
+  $('wordInput').addEventListener('input',e=>{wordText=e.target.value;syncMenu()});
+  $('wordInput').addEventListener('keydown',e=>e.stopPropagation());
+}
+function syncMenu(){
+  LETTERS.forEach(l=>{const b=$('lt_'+l.u);b.setAttribute('aria-pressed',selected.has(l.u));
+    b.textContent = mode==='lower'? l.u.toLowerCase() : l.u});
+  const cur=[...selected].sort().join('');
+  document.querySelectorAll('#presets .chip').forEach((b,i)=>b.setAttribute('aria-pressed', PRESETS[i].set.split('').sort().join('')===cur));
+  document.querySelectorAll('#modeSeg .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
+  document.querySelectorAll('#gameSeg .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.game===game));
+  $('secWords').hidden = game!=='words'; $('secLetters').hidden = game==='words';
+  const vw=validWords(), bad=invalidWords();
+  $('wordNote').textContent = bad.length ? `Hoppar över ${bad.join(', ')} – bara bokstäverna A–Ö går att använda.` : 'Man fångar bokstäverna i rätt ordning. Tre ord per bana.';
+  const empty = game==='words' ? vw.length===0 : selected.size===0;
+  $('btnStart').disabled = empty;
+  $('btnStart').textContent = !empty ? 'Starta' : (game==='words' ? 'Skriv minst ett ord' : 'Välj minst en bokstav');
+  store.set('game',game); store.set('words',wordText);
+  $('bestNote').textContent = best>0 ? `Rekord: ${best} rätta bokstäver` : '';
+  document.querySelectorAll('#diffSeg .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.diff===diff));
+  store.set('letters',[...selected]); store.set('mode',mode); store.set('diff',diff);
+}
+
+/* ============ Ljud ============ */
+let actx=null;
+function initAudio(){ if(actx) return; try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} }
+function tone(f,dur,type='sine',vol=.15,to=null,delay=0){
+  if(!soundOn||!actx) return;
+  const t=actx.currentTime+delay, o=actx.createOscillator(), g=actx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur);
+}
+const sfx = {
+  jump(){tone(380,.15,'square',.05,620)},
+  good(){tone(660,.12,'triangle',.18);tone(880,.12,'triangle',.18,null,.1);tone(1175,.2,'triangle',.18,null,.2)},
+  bad(){tone(220,.25,'sawtooth',.07,150)},
+  stomp(){tone(300,.12,'square',.08,120)},
+  hurt(){tone(400,.35,'sawtooth',.08,90)},
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.18,null,i*.13))},
+};
+let svVoice=null;
+function pickVoice(){ if(!('speechSynthesis' in window)) return; const v=speechSynthesis.getVoices();
+  svVoice = v.find(x=>/^sv/i.test(x.lang)) || null; }
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+function say(text){
+  if(!soundOn||!('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='sv-SE'; if(svVoice) u.voice=svVoice; u.rate=.85; speechSynthesis.speak(u);}catch(e){}
+}
+
+/* ============ Canvas & skala ============ */
+const cv=$('game'), ctx=cv.getContext('2d');
+const WORLD_H=540, GY=460;
+let scale=1, viewW=960, viewH=540, dpr=1;
+function resize(){
+  const w=cv.clientWidth, h=cv.clientHeight; dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  scale=h/WORLD_H; if(w/scale<760) scale=w/760;
+  viewW=w/scale; viewH=h/scale;
+}
+window.addEventListener('resize',resize); resize();
+
+/* ============ Spelläge ============ */
+const GOAL=5;
+let state='menu';          // menu | play | pause | done | over
+let level=1, totalCorrect=0, levelCorrect=0, levelWrong=0, hearts=3;
+let target='M', lastTarget=null;
+let solids=[], enemies=[], bubbles=[], flowers=[], particles=[], floats=[];
+let waiting=false; // true mellan två mål – då kan inga bubblor fångas
+let genX=0, nextBubbleX=0, sinceTarget=0, flag=null, camX=0, tick=0;
+const P={x:100,y:300,w:34,h:50,vx:0,vy:0,onGround:false,face:1,inv:0,coyote:0,buffer:0,walk:0,safe:{x:100,y:GY-50},jumpHeld:false};
+
+const rand=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rand(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const disp=ch=> (mode==='upper')? ch : ch.toLowerCase();       // hur bubblorna visas
+const dispTarget=ch=> (mode==='lower')? ch.toLowerCase() : ch; // hur målet visas
+
+function addGround(x,w){ solids.push({x,y:GY,w,h:260,type:'ground'});
+  for(let fx=x+30; fx<x+w-20; fx+=rand(60,160)) flowers.push({x:fx,c:pick(['#ffd43b','#ff8787','#ffffff','#b197fc']),s:rand(.8,1.2)});
+  return x+w; }
+
+function genChunk(){
+  const gapMax=Math.min(80+level*14,140), snailP=Math.min(.18+level*.05,.4);
+  if(diff==='easy'){ // Easymode: bara mark, låga stenar och lådor – inget som kostar liv
+    const w=ri(480,700), t=Math.random(); addGround(genX,w);
+    if(t<.3) solids.push({x:genX+ri(180,320),y:GY-42,w:ri(44,56),h:42,type:'rock'});
+    else if(t<.55){ solids.push({x:genX+ri(140,220),y:GY-110,w:ri(3,5)*40,h:30,type:'crate'}); }
+    genX+=w; return;
+  }
+  const r=Math.random();
+  if(r<.22){ // lucka
+    const w=ri(260,420); addGround(genX,w); genX+=w+ri(64,gapMax);
+  } else if(r<.44){ // stenar
+    const w=ri(520,720); addGround(genX,w);
+    const n=ri(1,2); for(let i=0;i<n;i++){ const tall=Math.random()<.35+level*.05; const h=tall?78:42, rw=ri(44,62);
+      solids.push({x:genX+160+i*ri(200,260),y:GY-h,w:rw,h,type:'rock'}); }
+    genX+=w;
+  } else if(r<.64){ // lådor
+    const w=ri(560,720); addGround(genX,w);
+    const bx=genX+ri(140,220), bw=ri(3,5)*40;
+    solids.push({x:bx,y:GY-110,w:bw,h:30,type:'crate'});
+    genX+=w;
+  } else if(r<.64+snailP){ // snigel
+    const w=ri(560,720); addGround(genX,w);
+    enemies.push({x:genX+w*.6,y:GY-30,w:46,h:30,vx:-(.5+level*.08),min:genX+20,max:genX+w-20,dead:0});
+    genX+=w;
+  } else { const w=ri(380,620); addGround(genX,w); genX+=w; }
+}
+
+function solidAt(x,types){ return solids.filter(s=>types.includes(s.type) && x>=s.x-10 && x<=s.x+s.w+10); }
+
+function chooseLetter(){
+  const forceTarget = sinceTarget>=2;
+  if(forceTarget || Math.random()<.38){ sinceTarget=0; return target; }
+  sinceTarget++;
+  const pool=(game==='words' ? [...new Set(word.toUpperCase().split(''))] : [...selected]).filter(c=>c!==target);
+  const conf=(CONFUSE[target]||'').split('').filter(Boolean);
+  if(conf.length && (Math.random()<.35 || pool.length===0)) return pick(conf);
+  if(pool.length) return pick(pool);
+  return pick(LETTERS.map(l=>l.u).filter(c=>c!==target));
+}
+function spawnBubble(x){
+  while(genX < x+200) genChunk();
+  let y;
+  const tops=solidAt(x,['crate','rock']);
+  if(tops.length){ y=Math.min(...tops.map(s=>s.y))-48; }
+  else if(!solidAt(x,['ground']).length){ y=GY-125; }
+  else y = Math.random() < (diff==='easy'?.7:.5) ? GY-42 : GY-135;
+  bubbles.push({x,y,r:30,ch:chooseLetter(),ph:Math.random()*6});
+}
+
+function nextWord(){
+  if(!wordQueue.length){ wordQueue=validWords().sort(()=>Math.random()-.5); if(wordQueue.length>1 && wordQueue[0]===word) wordQueue.push(wordQueue.shift()); }
+  waiting=false; word=wordQueue.shift(); wIdx=0;
+  target=word[0].toUpperCase(); sinceTarget=2; updateTargetHud();
+  say(`Skriv ${word}. Första bokstaven: ${BY[target].sound}`);
+}
+function nextWordLetter(){
+  target=word[wIdx].toUpperCase(); sinceTarget=2; updateTargetHud(); say(BY[target].sound);
+}
+function newTarget(){
+  waiting=false;
+  if(game==='words') return nextWord();
+  const pool=[...selected];
+  let t=pick(pool); if(pool.length>1){ while(t===lastTarget) t=pick(pool); }
+  lastTarget=target=t; sinceTarget=2; // nästa bubbla blir målet
+  updateTargetHud(); announce();
+}
+function announce(prefix=''){
+  const L=BY[target];
+  if(game==='words') return say(`${word}. ${wIdx===0?'Första':'Nästa'} bokstav: ${L.sound}`); say(`${prefix}${L.sound}. ${L.sound}, som i ${L.word}`);
+}
+function updateTargetHud(){
+  const L=BY[target];
+  document.querySelector('.target').classList.toggle('words',game==='words');
+  if(game==='words'){
+    const w=word.split('').map(c=>mode==='upper'?c.toUpperCase():c.toLowerCase());
+    $('tLetter').textContent=disp(target);
+    $('tLabel').textContent='Skriv ordet';
+    $('tWord').innerHTML=w.map((c,i)=>`<span class="${i<wIdx?'done':i===wIdx?'cur':'rest'}">${c}</span>`).join('');
+    return;
+  }
+  $('tLetter').textContent=dispTarget(target);
+  $('tLabel').textContent = mode==='match' ? `Fånga lilla ${target.toLowerCase()}` : 'Fånga';
+  const w = (mode==='upper') ? L.word[0].toUpperCase()+L.word.slice(1) : L.word;
+  $('tWord').innerHTML = `<b>${w[0]}</b>${w.slice(1)} ${L.pic}`;
+}
+function updateHud(){
+  $('lvl').textContent='Bana '+level;
+  $('slots').innerHTML=Array.from({length:goal()},(_,i)=>`<span class="slot${i<levelCorrect?' on':''}"></span>`).join('');
+  $('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<hearts?'':'lost'}">♥</span>`).join('');
+  $('heartPill').hidden = diff==='easy';
+  $('btnSound').classList.toggle('off',!soundOn);
+  $('soundWave').style.display = soundOn?'none':'';
+}
+
+function startLevel(){
+  solids=[];enemies=[];bubbles=[];flowers=[];particles=[];floats=[];flag=null; waiting=false;
+  genX=addGround(0,760); nextBubbleX=520; sinceTarget=0;
+  levelCorrect=0; levelWrong=0; hearts=3;
+  Object.assign(P,{x:100,y:GY-50,vx:0,vy:0,onGround:true,face:1,inv:0,coyote:0,buffer:0});
+  P.safe={x:100,y:GY-50}; camX=0;
+  newTarget(); updateHud(); setState('play');
+}
+function newGame(){ level=1; totalCorrect=0; hearts=3; wordQueue=[]; startLevel(); }
+
+function setState(s){
+  state=s;
+  $('menu').hidden = s!=='menu'; $('pause').hidden = s!=='pause';
+  $('done').hidden = s!=='done'; $('over').hidden = s!=='over';
+  $('hud').hidden = s==='menu';
+  $('rotate').classList.toggle('ingame', s==='play');
+  if(s==='menu'){ syncMenu(); }
+}
+
+/* ============ Input ============ */
+const keys={left:false,right:false,jump:false};
+const KMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'jump',ArrowUp:'jump',KeyW:'jump'};
+addEventListener('keydown',e=>{
+  if(e.code==='Escape'||e.code==='KeyP'){ if(state==='play') setState('pause'); else if(state==='pause') setState('play'); return; }
+  const k=KMAP[e.code]; if(!k || state!=='play') return; e.preventDefault();
+  if(k==='jump' && !keys.jump) P.buffer=8;
+  keys[k]=true;
+});
+addEventListener('keyup',e=>{const k=KMAP[e.code]; if(k) keys[k]=false;});
+function bindTouch(id,k){
+  const el=$(id);
+  const on=e=>{e.preventDefault(); initAudio(); if(k==='jump'&&!keys.jump) P.buffer=8; keys[k]=true; el.classList.add('down');};
+  const off=e=>{keys[k]=false; el.classList.remove('down');};
+  el.addEventListener('pointerdown',on); ['pointerup','pointercancel','pointerleave'].forEach(t=>el.addEventListener(t,off));
+}
+bindTouch('tLeft','left'); bindTouch('tRight','right'); bindTouch('tJump','jump');
+const showTouch=()=>$('touch').classList.add('show');
+if(matchMedia('(pointer:coarse)').matches) showTouch();
+addEventListener('touchstart',showTouch,{passive:true});
+addEventListener('blur',()=>{keys.left=keys.right=keys.jump=false; if(state==='play') setState('pause');});
+
+/* ============ Fysik ============ */
+const overlap=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+function near(o){ return solids.filter(s=>s.x<o.x+o.w+80 && s.x+s.w>o.x-80); }
+
+function hurt(dir){
+  if(P.inv>0 || diff==='easy') return;
+  hearts--; sfx.hurt(); updateHud(); P.inv=100; P.vy=-8; P.vx=dir*5;
+  if(hearts<=0) gameOver();
+}
+function catchBubble(b){
+  burst(b.x,b.y, b.ch===target ? ['#ffd43b','#69db7c','#fff'] : ['#ff8787','#fff']);
+  if(b.ch===target && game==='words'){
+    sfx.good(); totalCorrect++; wIdx++;
+    if(wIdx>=word.length){
+      waiting=true; levelCorrect++; updateHud(); updateTargetHud();
+      floats.push({x:b.x,y:b.y-40,t:90,txt:mode==='upper'?word.toUpperCase():word.toLowerCase(),c:'#2f9e44'});
+      sfx.win();
+      if(levelCorrect>=goal()){ placeFlag(); say(`Bra! Du skrev ${word}! Spring till flaggan!`); }
+      else { say(`Bra! Du skrev ${word}!`); setTimeout(()=>{ if(state==='play'||state==='pause') nextWord(); }, 1900); }
+    } else { floats.push({x:b.x,y:b.y-30,t:50,txt:'Rätt!',c:'#2f9e44'}); nextWordLetter(); }
+    return;
+  }
+  if(b.ch===target){
+    waiting=true; sfx.good(); levelCorrect++; totalCorrect++;
+    floats.push({x:b.x,y:b.y-30,t:60,txt:'Rätt!',c:'#2f9e44'});
+    updateHud();
+    if(levelCorrect>=goal()){ placeFlag(); say('Bra! Spring till flaggan!'); }
+    else { const L=BY[target]; setTimeout(()=>newTarget(), 450); say(`Bra! ${L.word}`); }
+  } else {
+    sfx.bad(); levelWrong++;
+    floats.push({x:b.x,y:b.y-30,t:60,txt:disp(b.ch),c:'#d6336c'});
+    const W=BY[b.ch], L=BY[target];
+    say(game==='words' ? `Det var ${W.sound}. Leta efter ${L.sound}` : `Det var ${W.sound}, som i ${W.word}. Leta efter ${L.sound}`);
+  }
+}
+function placeFlag(){
+  let fx=P.x+650;
+  while(genX<fx+400) genChunk();
+  while(!solidAt(fx,['ground']).some(s=>fx>s.x+20&&fx<s.x+s.w-40) || solidAt(fx,['rock','crate']).length){ fx+=40; while(genX<fx+400) genChunk(); }
+  flag={x:fx,y:GY};
+  bubbles.forEach(b=>{ if(!b.away) b.away=1; }); // städa bort bubblorna så att flaggan syns tydligt
+  floats.push({x:P.x+P.w/2,y:P.y-60,t:150,txt:'Spring till flaggan →',c:'#e9573a'});
+}
+function burst(x,y,cols){ for(let i=0;i<18;i++){const a=Math.random()*Math.PI*2,s=rand(1.5,5);
+  particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,t:ri(30,50),c:pick(cols),r:rand(3,6)});}}
+
+function step(){
+  tick++;
+  // rörelse
+  const acc=P.onGround?.6:.4, max=4.3;
+  if(keys.left&&!keys.right){P.vx=Math.max(P.vx-acc,-max);P.face=-1}
+  else if(keys.right&&!keys.left){P.vx=Math.min(P.vx+acc,max);P.face=1}
+  else P.vx*= P.onGround?.75:.95;
+  if(Math.abs(P.vx)<.05)P.vx=0;
+  P.coyote = P.onGround?7:Math.max(0,P.coyote-1);
+  if(P.buffer>0)P.buffer--;
+  if(P.buffer>0 && P.coyote>0){P.vy=-14.2;P.onGround=false;P.coyote=0;P.buffer=0;sfx.jump();}
+  if(!keys.jump && P.vy<-5) P.vy=-5;           // kort hopp om man släpper
+  P.vy=Math.min(P.vy+.6,15);
+  // x
+  P.x+=P.vx; if(P.x<0){P.x=0;P.vx=0}
+  for(const s of near(P)) if(s.type!=='crate' && overlap(P,s)){ if(P.vx>0)P.x=s.x-P.w; else if(P.vx<0)P.x=s.x+s.w; P.vx=0; }
+  // y
+  const prevBottom=P.y+P.h;
+  P.y+=P.vy; P.onGround=false;
+  for(const s of near(P)) if(overlap(P,s)){
+    if(s.type==='crate' && !(P.vy>0 && prevBottom<=s.y+1)) continue; // plattformar: hoppa igenom underifrån, landa ovanpå
+    if(P.vy>0){P.y=s.y-P.h;P.vy=0;P.onGround=true;
+      if(s.type==='ground' && P.inv<60 && P.x>s.x+10 && P.x+P.w<s.x+s.w-10) P.safe={x:P.x,y:P.y};}
+    else if(P.vy<0){P.y=s.y+s.h;P.vy=0;}
+  }
+  if(P.onGround&&Math.abs(P.vx)>.3) P.walk+=Math.abs(P.vx)*.08;
+  if(P.inv>0)P.inv--;
+  // ramlat ner
+  if(P.y>WORLD_H+120 && diff==='easy'){ Object.assign(P,{x:P.safe.x,y:P.safe.y-60,vx:0,vy:0}); }
+  else if(P.y>WORLD_H+120){ hearts--; sfx.hurt(); updateHud();
+    if(hearts<=0){gameOver();return;}
+    Object.assign(P,{x:P.safe.x,y:P.safe.y-60,vx:0,vy:0,inv:100}); }
+  // fiender
+  for(const e of enemies){
+    if(e.dead){e.dead--;continue}
+    e.x+=e.vx; if(e.x<e.min||e.x+e.w>e.max){e.vx*=-1;e.x+=e.vx*2;}
+    if(e.gone) continue;
+    if(overlap(P,e)){
+      if(P.vy>0 && P.y+P.h-P.vy<=e.y+10){ e.gone=true; e.dead=30; P.vy=-9; sfx.stomp(); burst(e.x+e.w/2,e.y+10,['#b5838d','#fff']); }
+      else hurt(P.x+P.w/2<e.x+e.w/2?-1:1);
+    }
+  }
+  enemies=enemies.filter(e=>!(e.gone&&e.dead<=0) && e.x>camX-600);
+  // bubblor
+  if(!flag) while(nextBubbleX < camX+viewW+150){ spawnBubble(nextBubbleX); nextBubbleX+=ri(230,320); }
+  while(genX<camX+viewW+400) genChunk();
+  for(const b of bubbles){
+    if(b.away){ b.away++; b.y-=3.5; b.x+=1.5; if(b.away>45) b.hit=true; continue; }
+    const by=b.y+Math.sin(tick*.05+b.ph)*6;
+    const cx=Math.max(P.x,Math.min(b.x,P.x+P.w)), cy=Math.max(P.y,Math.min(by,P.y+P.h));
+    if(!waiting && (cx-b.x)**2+(cy-by)**2 < b.r*b.r){
+      if(diff==='easy' && b.ch!==target){ b.away=1; tone(520,.12,'sine',.06,700); continue; } // Easymode: fel bokstav flyger undan
+      b.hit=true; catchBubble(b); }
+  }
+  bubbles=bubbles.filter(b=>!b.hit && b.x>camX-200);
+  solids=solids.filter(s=>s.x+s.w>camX-1200);
+  flowers=flowers.filter(f=>f.x>camX-1200);
+  for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.2;p.t--}
+  particles=particles.filter(p=>p.t>0);
+  for(const f of floats){f.y-=.8;f.t--} floats=floats.filter(f=>f.t>0);
+  // flagga
+  if(flag && P.x+P.w>flag.x){ levelDone(); return; }
+  // kamera
+  const want=P.x-viewW*.35; camX+= (Math.max(0,want)-camX)*.12;
+}
+
+function levelDone(){
+  sfx.win();
+  const stars = levelWrong===0?3: levelWrong<=2?2:1;
+  $('doneTitle').textContent=`Bana ${level} klar!`;
+  $('doneStars').innerHTML=[1,2,3].map(i=>`<span class="${i<=stars?'':'dim'}">★</span>`).join('');
+  const what = game==='words' ? `${goal()} ord` : `${goal()} rätt`;
+  $('doneStat').textContent = levelWrong===0 ? `${what} och inga fel. Snyggt!` : `${what} och ${levelWrong} fel.`;
+  say(stars===3?'Fantastiskt! Inga fel!':'Bra jobbat!');
+  if(totalCorrect>best){best=totalCorrect;store.set('best',best)}
+  setState('done');
+}
+function gameOver(){
+  if(totalCorrect>best){best=totalCorrect;store.set('best',best)}
+  $('overStat').textContent=`Du kom till bana ${level} och fångade ${totalCorrect} rätta bokstäver.`;
+  say('Bra kämpat!');
+  setState('over');
+}
+
+/* ============ Rita ============ */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function drawBackground(){
+  const g=ctx.createLinearGradient(0,0,0,viewH); g.addColorStop(0,'#7cc8ef'); g.addColorStop(1,'#d9f1fb');
+  ctx.fillStyle=g; ctx.fillRect(0,0,viewW,viewH);
+  const off=viewH-WORLD_H;
+  // sol
+  ctx.fillStyle='#ffe066'; ctx.beginPath(); ctx.arc(viewW-110,off+110,46,0,7); ctx.fill();
+  ctx.fillStyle='rgba(255,224,102,.3)'; ctx.beginPath(); ctx.arc(viewW-110,off+110,66,0,7); ctx.fill();
+  // moln
+  ctx.fillStyle='rgba(255,255,255,.92)';
+  for(let i=0;i<6;i++){ const span=viewW+400; let x=((i*330 - camX*.15 + tick*.15*(i%2+1))%span+span)%span-200; const y=off+60+(i*53)%140;
+    ctx.beginPath(); ctx.arc(x,y,26,0,7); ctx.arc(x+30,y-12,32,0,7); ctx.arc(x+64,y,24,0,7); ctx.rect(x,y,64,24); ctx.fill(); }
+  // kullar
+  const hill=(k,base,amp,per,col)=>{ ctx.fillStyle=col; ctx.beginPath(); ctx.moveTo(0,viewH);
+    for(let x=0;x<=viewW+20;x+=20){ const wx=x+camX*k; ctx.lineTo(x, off+base+Math.sin(wx/per)*amp+Math.sin(wx/(per*.37))*amp*.3); }
+    ctx.lineTo(viewW,viewH); ctx.fill(); };
+  hill(.2,330,40,260,'#a5d8a0'); hill(.45,380,30,180,'#7cc576');
+}
+function drawSolid(s){
+  if(s.type==='ground'){
+    ctx.fillStyle='#a8703f'; ctx.fillRect(s.x,s.y,s.w,s.h);
+    ctx.fillStyle='#8f5c31';
+    for(let x=s.x+18;x<s.x+s.w-10;x+=46){ const yy=s.y+32+((x*7)%40); ctx.beginPath(); ctx.ellipse(x,yy,7,4,0,0,7); ctx.fill(); }
+    ctx.fillStyle='#4fb447'; rr(s.x-2,s.y-4,s.w+4,18,8); ctx.fill();
+    ctx.fillStyle='#69c95f'; rr(s.x,s.y-4,s.w,7,4); ctx.fill();
+  } else if(s.type==='rock'){
+    ctx.fillStyle='#8d94a6'; rr(s.x,s.y,s.w,s.h+4,[16,16,4,4]); ctx.fill();
+    ctx.fillStyle='#a7aec0'; rr(s.x+6,s.y+5,s.w*.45,s.h*.35,8); ctx.fill();
+    ctx.strokeStyle='#5f6679'; ctx.lineWidth=2.5; rr(s.x,s.y,s.w,s.h+4,[16,16,4,4]); ctx.stroke();
+  } else {
+    for(let x=s.x;x<s.x+s.w;x+=40){
+      ctx.fillStyle='#e0a458'; ctx.fillRect(x,s.y,40,s.h);
+      ctx.strokeStyle='#9c6227'; ctx.lineWidth=3; ctx.strokeRect(x+1.5,s.y+1.5,37,s.h-3);
+      ctx.beginPath(); ctx.moveTo(x+6,s.y+6); ctx.lineTo(x+34,s.y+s.h-6); ctx.moveTo(x+34,s.y+6); ctx.lineTo(x+6,s.y+s.h-6); ctx.lineWidth=2; ctx.stroke();
+    }
+  }
+}
+function drawFlower(f){
+  ctx.save(); ctx.translate(f.x,GY-2); ctx.scale(f.s,f.s);
+  ctx.strokeStyle='#2f8a3a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-14); ctx.stroke();
+  ctx.fillStyle=f.c; for(let i=0;i<5;i++){const a=i*1.256; ctx.beginPath(); ctx.arc(Math.cos(a)*4,-16+Math.sin(a)*4,3.2,0,7); ctx.fill();}
+  ctx.fillStyle='#f08c00'; ctx.beginPath(); ctx.arc(0,-16,2.2,0,7); ctx.fill(); ctx.restore();
+}
+function drawSnail(e){
+  ctx.save(); ctx.translate(e.x+e.w/2,e.y+e.h);
+  if(e.gone){ ctx.scale(1,.35); ctx.globalAlpha=Math.max(0,e.dead/30); }
+  const d=e.vx<0?-1:1; ctx.scale(d,1);
+  ctx.fillStyle='#f7c59f'; rr(-24,-12,48,12,6); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(18,-10); ctx.lineTo(24,-26); ctx.moveTo(14,-10); ctx.lineTo(16,-26); ctx.strokeStyle='#e8a57c'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#1f2f5c'; ctx.beginPath(); ctx.arc(24,-27,3,0,7); ctx.arc(16,-27,3,0,7); ctx.fill();
+  ctx.fillStyle='#b5838d'; ctx.beginPath(); ctx.arc(-4,-20,17,0,7); ctx.fill();
+  ctx.strokeStyle='#6d4c5a'; ctx.lineWidth=3; ctx.beginPath();
+  for(let a=0;a<12;a+=.3){ const r=15-a*1.15; if(r<1)break; ctx.lineTo(-4+Math.cos(a)*r,-20+Math.sin(a)*r);} ctx.stroke();
+  ctx.restore();
+}
+function drawBubble(b){
+  ctx.save(); if(b.away) ctx.globalAlpha=Math.max(0,1-b.away/45);
+  const y=b.y+Math.sin(tick*.05+b.ph)*6;
+  const g=ctx.createRadialGradient(b.x-10,y-12,4,b.x,y,b.r);
+  g.addColorStop(0,'rgba(255,255,255,.98)'); g.addColorStop(1,'rgba(214,239,255,.9)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(b.x,y,b.r,0,7); ctx.fill();
+  ctx.strokeStyle='#5aa9e6'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(b.x-12,y-14,7,4,-.6,0,7); ctx.fill();
+  ctx.fillStyle='#1f2f5c'; ctx.font='700 36px Andika, "Segoe UI", sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(disp(b.ch),b.x,y+2);
+  ctx.restore();
+}
+function drawFlag(){
+  const x=flag.x,y=flag.y;
+  ctx.fillStyle='#6c757d'; ctx.fillRect(x,y-200,7,200);
+  ctx.fillStyle='#ffd43b'; ctx.beginPath(); ctx.arc(x+3.5,y-204,8,0,7); ctx.fill();
+  const wave=Math.sin(tick*.12)*6;
+  ctx.fillStyle='#e9573a'; ctx.beginPath(); ctx.moveTo(x+7,y-192); ctx.quadraticCurveTo(x+40,y-182+wave,x+76,y-170); ctx.lineTo(x+7,y-140); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='700 22px Andika, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('★',x+30,y-166);
+}
+function drawPlayer(){
+  if(P.inv>0 && Math.floor(P.inv/5)%2) return;
+  const cx=P.x+P.w/2, by=P.y+P.h;
+  ctx.save(); ctx.translate(cx,by); ctx.scale(P.face,1);
+  const sw = P.onGround ? Math.sin(P.walk*3)*8 : 6;
+  // ben
+  ctx.strokeStyle='#1f2f5c'; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-5,-14); ctx.lineTo(-5+sw,-3); ctx.moveTo(5,-14); ctx.lineTo(5-sw,-3); ctx.stroke();
+  ctx.fillStyle='#343a40'; ctx.beginPath(); ctx.ellipse(-3+sw,-2,6,3.5,0,0,7); ctx.ellipse(7-sw,-2,6,3.5,0,0,7); ctx.fill();
+  // jacka
+  ctx.fillStyle='#e9573a'; rr(-13,-36,26,24,8); ctx.fill();
+  ctx.fillStyle='#ffd43b'; ctx.fillRect(-2,-34,3,20);
+  // arm
+  ctx.strokeStyle='#c8432a'; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(4,-30); ctx.lineTo(12, P.onGround?-20-sw*.4:-40); ctx.stroke();
+  // huvud
+  ctx.fillStyle='#ffd8b5'; ctx.beginPath(); ctx.arc(0,-46,13,0,7); ctx.fill();
+  ctx.fillStyle='#1f2f5c'; ctx.beginPath(); ctx.arc(6,-47,2.2,0,7); ctx.fill();
+  ctx.strokeStyle='#c2724f'; ctx.lineWidth=1.8; ctx.beginPath(); ctx.arc(5,-42,4,.2,1.4); ctx.stroke();
+  ctx.fillStyle='#ff9f9f'; ctx.globalAlpha=.6; ctx.beginPath(); ctx.arc(9,-42,2.5,0,7); ctx.fill(); ctx.globalAlpha=1;
+  // mössa
+  ctx.fillStyle='#3b7dd8'; ctx.beginPath(); ctx.arc(0,-49,13.5,Math.PI,0); ctx.fill(); ctx.fillRect(-14,-51,28,5);
+  ctx.fillStyle='#ffd43b'; ctx.beginPath(); ctx.arc(-4,-63,4.5,0,7); ctx.fill();
+  ctx.restore();
+}
+function render(){
+  ctx.setTransform(scale*dpr,0,0,scale*dpr,0,0);
+  drawBackground();
+  ctx.save(); ctx.translate(-Math.round(camX), viewH-WORLD_H);
+  const L=camX-100, R=camX+viewW+100;
+  for(const s of solids) if(s.type==='ground' && s.x<R && s.x+s.w>L) drawSolid(s);
+  for(const f of flowers) if(f.x>L&&f.x<R) drawFlower(f);
+  for(const s of solids) if(s.type!=='ground' && s.x<R && s.x+s.w>L) drawSolid(s);
+  if(flag) drawFlag();
+  for(const e of enemies) if(e.x<R&&e.x>L-60) drawSnail(e);
+  for(const b of bubbles) if(b.x>L&&b.x<R) drawBubble(b);
+  drawPlayer();
+  for(const p of particles){ctx.globalAlpha=Math.min(1,p.t/20);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
+  ctx.globalAlpha=1;
+  for(const f of floats){ctx.globalAlpha=Math.min(1,f.t/25);ctx.font='700 30px Andika, sans-serif';ctx.textAlign='center';
+    ctx.lineWidth=6;ctx.strokeStyle='#fff';ctx.strokeText(f.txt,f.x,f.y);ctx.fillStyle=f.c;ctx.fillText(f.txt,f.x,f.y);}
+  ctx.globalAlpha=1; ctx.restore();
+}
+
+/* ============ Loop ============ */
+let last=performance.now(), accT=0;
+function loop(t){
+  const dt=Math.min(100,t-last); last=t;
+  if(state==='play'){ accT+=dt; while(accT>=1000/60 && state==='play'){ step(); accT-=1000/60; } } else accT=0;
+  render(); requestAnimationFrame(loop);
+}
+
+/* ============ Knappar ============ */
+$('btnStart').onclick=()=>{ initAudio(); if(actx&&actx.state==='suspended')actx.resume(); newGame(); };
+$('btnSay').onclick=()=>announce();
+$('btnSound').onclick=()=>{ soundOn=!soundOn; store.set('sound',soundOn); if(!soundOn&&'speechSynthesis' in window)speechSynthesis.cancel(); updateHud(); };
+$('btnPause').onclick=()=>setState('pause');
+$('btnResume').onclick=()=>setState('play');
+$('btnNext').onclick=()=>{ level++; startLevel(); };
+$('btnAgain').onclick=()=>newGame();
+['btnToMenu1','btnToMenu2','btnToMenu3'].forEach(id=>$(id).onclick=()=>{ if('speechSynthesis' in window)speechSynthesis.cancel(); setState('menu'); });
+
+/* ============ Start: visa en demo-bana bakom menyn ============ */
+buildMenu(); syncMenu(); P.y=GY-50;
+solids=[]; genX=addGround(0,760); while(genX<2400) genChunk();
+target=[...selected][0]||'A'; for(let x=520;x<2000;x+=280) bubbles.push({x,y:Math.random()<.5?GY-42:GY-135,r:30,ch:pick(LETTERS).u,ph:Math.random()*6});
+if(document.fonts&&document.fonts.load) document.fonts.load('700 36px Andika').catch(()=>{});
+requestAnimationFrame(loop);
+</script>
+
+</body></html>

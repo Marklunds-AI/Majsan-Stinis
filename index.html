@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Majsan och Stinis spelhörna</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f7ff; --panel:#ffffff; --ink:#22324a; --muted:#5b6f8a; --line:#22324a;
+  --gul:#ffd84d; --gron:#7dd8a8; --bla:#8cc8ff; --rosa:#ff9fb8; --lila:#c3a6ff; --orange:#ffb066;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+  font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Segoe UI',system-ui,sans-serif;
+}
+main{max-width:1000px; margin:0 auto; padding:40px 16px 60px}
+header{text-align:center; margin-bottom:32px}
+header .logo{font-size:56px; line-height:1}
+h1{font-size:clamp(34px,6vw,52px); margin:8px 0 4px; font-weight:700}
+header p{margin:0; font-size:20px; color:var(--muted)}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px}
+
+.card{
+  display:flex; flex-direction:column; text-decoration:none; color:var(--ink);
+  background:var(--panel); border:3px solid var(--line); border-radius:22px; overflow:hidden;
+  box-shadow:0 6px 0 var(--line); transition:transform .12s, box-shadow .12s;
+}
+.card:hover{transform:translateY(-3px); box-shadow:0 9px 0 var(--line)}
+.card:active{transform:translateY(4px); box-shadow:0 2px 0 var(--line)}
+.card:focus-visible{outline:4px solid var(--rosa); outline-offset:4px}
+.card .top{
+  display:grid; place-items:center; height:140px; font-size:76px;
+  border-bottom:3px solid var(--line); background:var(--gul);
+}
+.card .body{padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1}
+.card h2{margin:0; font-size:26px; font-weight:600}
+.card p{margin:0; font-size:17px; color:var(--muted); line-height:1.35; flex:1}
+.row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px}
+.badge{font-size:14px; font-weight:500; color:var(--muted); display:flex; align-items:center; gap:5px}
+.play{
+  background:var(--gul); color:#22324a; border:3px solid var(--line); border-radius:14px;
+  padding:6px 16px; font-weight:600; font-size:18px; white-space:nowrap;
+}
+
+.c-gul .top,.c-gul .play{background:var(--gul)}
+.c-gron .top,.c-gron .play{background:var(--gron)}
+.c-bla .top,.c-bla .play{background:var(--bla)}
+.c-rosa .top,.c-rosa .play{background:var(--rosa)}
+.c-lila .top,.c-lila .play{background:var(--lila)}
+.c-orange .top,.c-orange .play{background:var(--orange)}
+
+.search{display:flex; justify-content:center; margin:-8px 0 28px}
+.search input{
+  width:100%; max-width:420px; font:inherit; font-size:19px; color:var(--ink);
+  background:var(--panel); border:3px solid var(--line); border-radius:999px; padding:10px 20px;
+}
+.search input:focus-visible{outline:4px solid var(--rosa); outline-offset:2px}
+.empty{text-align:center; color:var(--muted); font-size:19px; padding:30px 0}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="logo" aria-hidden="true">🎮</div>
+    <h1 id="titel">Majsan och Stinis spelhörna</h1>
+    <p id="underrubrik"></p>
+  </header>
+
+  <div class="search hidden" id="sokruta">
+    <input type="search" id="sok" placeholder="🔍 Sök efter ett spel…" aria-label="Sök efter ett spel">
+  </div>
+
+  <div class="grid" id="lista"></div>
+  <p class="empty hidden" id="tom">Inga spel matchar din sökning.</p>
+</main>
+
+<!-- Listan med spel finns i filen spel.js -->
+<script src="spel.js"></script>
+<script>
+  const FARGER = ["gul","gron","bla","rosa","lila","orange"];
+  const lista = document.getElementById("lista");
+
+  document.title = SIDANS_NAMN;
+  document.getElementById("titel").textContent = SIDANS_NAMN;
+  document.getElementById("underrubrik").textContent = SIDANS_UNDERRUBRIK;
+
+  function el(tag, cls, text){
+    const e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(text) e.textContent = text;
+    return e;
+  }
+
+  SPEL.forEach((spel, i) => {
+    const farg = FARGER.includes(spel.farg) ? spel.farg : FARGER[i % FARGER.length];
+    const kort = el("a", "card c-" + farg);
+    kort.href = "spel/" + spel.fil;
+    kort.dataset.sok = (spel.namn + " " + (spel.beskrivning || "")).toLowerCase();
+
+    const topp = el("div", "top", spel.ikon || "🎲");
+    topp.setAttribute("aria-hidden", "true");
+
+    const kropp = el("div", "body");
+    kropp.append(el("h2", "", spel.namn), el("p", "", spel.beskrivning || ""));
+
+    const rad = el("div", "row");
+    const badge = spel.styrning === "tangentbord"
+      ? el("span", "badge", "⌨️ Kräver tangentbord")
+      : el("span", "badge", "👆 Funkar på surfplatta");
+    rad.append(badge, el("span", "play", "Spela ▶"));
+    kropp.append(rad);
+
+    kort.append(topp, kropp);
+    lista.append(kort);
+  });
+
+  // Sökrutan visas först när det finns fler än 6 spel
+  if (SPEL.length > 6) {
+    document.getElementById("sokruta").classList.remove("hidden");
+    document.getElementById("sok").addEventListener("input", e => {
+      const q = e.target.value.trim().toLowerCase();
+      let synliga = 0;
+      for (const kort of lista.children) {
+        const visa = kort.dataset.sok.includes(q);
+        kort.classList.toggle("hidden", !visa);
+        if (visa) synliga++;
+      }
+      document.getElementById("tom").classList.toggle("hidden", synliga > 0);
+    });
+  }
+</script>
+</body>
+</html>

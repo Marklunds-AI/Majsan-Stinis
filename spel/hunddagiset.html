@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hunddagiset</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcefff; --panel:#ffffff; --ink:#22324a; --muted:#5b6f8a; --line:#22324a;
+  --accent:#ffcc33; --accent-ink:#22324a; --pink:#ff6f91; --soft:#eef6ff;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+    --accent:#ffcc33; --accent-ink:#22324a; --pink:#ff86a3; --soft:#26405c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+  --accent:#ffcc33; --accent-ink:#22324a; --pink:#ff86a3; --soft:#26405c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Segoe UI',system-ui,sans-serif;
+  overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+.hidden{display:none!important}
+#app{height:100%;display:flex;flex-direction:column}
+
+/* HUD */
+#hud{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:6px;background:var(--panel);border:3px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:600;font-size:18px;min-height:44px}
+.chip b{font-weight:700}
+.day{display:flex;align-items:center;gap:8px;background:var(--panel);border:3px solid var(--line);border-radius:999px;padding:4px 12px;min-height:44px}
+.day b{font-size:18px}
+#roster{display:flex;gap:3px}
+.rs{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px;background:var(--soft);opacity:.45}
+.rs.here{opacity:1;background:var(--accent)}
+.rs.gone{opacity:1;background:#7cc35a;color:#fff;font-weight:700}
+.sp{flex:1}
+.hb{display:flex;align-items:center;gap:6px;background:var(--accent);color:var(--accent-ink);border:3px solid var(--line);border-radius:14px;padding:4px 12px;font-weight:600;font-size:17px;min-height:44px;box-shadow:0 3px 0 var(--line)}
+.hb:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+@media (max-width:720px){.hb span{display:none}.day b{font-size:16px}}
+
+/* Stage & scene */
+#stage{position:relative;flex:1;min-height:0;overflow:hidden}
+#scene{position:absolute;left:0;top:0;width:1000px;height:625px;transform-origin:0 0;border-radius:22px;overflow:hidden;border:4px solid #22324a;background:#9fd977}
+#scene svg.bg{position:absolute;inset:0;width:100%;height:100%}
+#ents{position:absolute;inset:0}
+#hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;font-weight:600;font-size:19px;padding:8px 18px;border-radius:999px;border:3px solid #22324a;z-index:40;max-width:92%;text-align:center;pointer-events:none;animation:hintpop .4s}
+@keyframes hintpop{from{transform:translateX(-50%) scale(.8);opacity:0}}
+
+/* Dogs */
+.dog{position:absolute;left:0;top:0;width:0;height:0;cursor:pointer}
+.dog .hit{position:absolute;left:-46px;top:-96px;width:92px;height:110px}
+.dog .sprite{position:absolute;left:-40px;top:-78px;width:80px;height:80px;transform-origin:50% 100%;pointer-events:none}
+.dog .flipper{width:100%;height:100%}
+.dog .flipper.flip{transform:scaleX(-1)}
+.dog svg{width:100%;height:100%;display:block;overflow:visible}
+.tail{transform-origin:82px 60px;transform-box:view-box;animation:wag .45s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+.dog.walking .flipper svg{animation:bob .26s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-5px)}}
+.dog.act-mat .flipper svg,.dog.act-vatten .flipper svg{animation:dip .45s ease-in-out infinite alternate}
+@keyframes dip{to{transform:translateY(4px) rotate(-6deg)}}
+.dog.act-lek .flipper svg{animation:zoom 1s ease-in-out infinite}
+@keyframes zoom{0%{transform:translate(0,0)}25%{transform:translate(-22px,-14px)}50%{transform:translate(0,0)}75%{transform:translate(22px,-14px)}100%{transform:translate(0,0)}}
+.dog.act-vila .flipper svg{transform:rotate(-8deg) scaleY(.88);transform-origin:50% 100%}
+.dog .toy,.dog .zz{position:absolute;left:18px;top:-60px;font-size:24px;display:none;pointer-events:none}
+.dog.act-lek .toy{display:block;animation:toss .5s ease-in-out infinite alternate}
+@keyframes toss{to{transform:translate(-30px,-26px) rotate(180deg)}}
+.dog.act-vila .zz{display:block;color:#fff;font-weight:700;text-shadow:0 2px 0 #22324a;animation:zz 1.6s ease-in-out infinite}
+@keyframes zz{0%{opacity:0;transform:translate(0,10px)}50%{opacity:1}100%{opacity:0;transform:translate(14px,-18px)}}
+.dog .ring{position:absolute;left:-36px;top:-12px;width:72px;height:24px;border-radius:50%;border:4px solid #ffcc33;box-shadow:0 0 0 3px #22324a;display:none;pointer-events:none}
+.dog.sel .ring{display:block;animation:ringp .9s ease-in-out infinite alternate}
+@keyframes ringp{to{transform:scale(1.12)}}
+.dog .tag{position:absolute;left:-42px;top:8px;width:84px;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.dog .tag span{background:#fff;color:#22324a;border:2px solid #22324a;border-radius:999px;padding:0 8px;font-size:14px;font-weight:600;line-height:20px;white-space:nowrap}
+.dog .tag i{display:block;width:52px;height:8px;border-radius:6px;background:#fff;border:2px solid #22324a;overflow:hidden}
+.dog .tag i b{display:block;height:100%;background:#ff6f91;transition:width .3s}
+.dog .bubble{position:absolute;left:-2px;width:54px;height:50px;background:#fff;border:3px solid #22324a;border-radius:50%;display:grid;place-items:center;font-size:27px;pointer-events:none;animation:pop .35s}
+.dog .bubble::before,.dog .bubble::after{content:"";position:absolute;background:#fff;border:3px solid #22324a;border-radius:50%}
+.dog .bubble::before{width:13px;height:13px;left:-2px;bottom:-9px}
+.dog .bubble::after{width:7px;height:7px;left:-10px;bottom:-17px}
+.dog .bubble.urgent{animation:wobble .6s ease-in-out infinite}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes wobble{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-9deg) scale(1.08)}75%{transform:rotate(9deg) scale(1.08)}}
+.dog.bye{opacity:0;transition:opacity .6s}
+
+/* Owners */
+.owner{position:absolute;left:0;top:0;width:0;height:0;transition:opacity .6s;pointer-events:none}
+.owner .osprite{position:absolute;left:-30px;top:-110px;width:60px;height:110px;animation:ownerIn .5s}
+.owner svg{width:100%;height:100%;display:block}
+@keyframes ownerIn{from{transform:translateX(40px);opacity:0}}
+.owner .say{position:absolute;bottom:118px;right:-14px;width:200px;background:#fff;color:#22324a;border:3px solid #22324a;border-radius:16px;padding:7px 10px;font-size:15px;line-height:1.25;font-weight:500;animation:pop .3s;transform-origin:90% 100%}
+.owner.bye{opacity:0}
+
+.float{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:24px;color:#fff;text-shadow:0 2px 0 #22324a,2px 0 0 #22324a,-2px 0 0 #22324a,0 -2px 0 #22324a;animation:rise 1.4s forwards;z-index:3000;pointer-events:none;white-space:nowrap}
+@keyframes rise{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-60px}}
+
+/* Action bar */
+#actionbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--panel);border:4px solid var(--line);border-radius:22px;padding:10px 12px;z-index:45;width:min(560px,96%);box-shadow:0 5px 0 var(--line)}
+.ab-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ab-av{width:52px;height:52px;flex:none}
+.ab-av svg{width:100%;height:100%}
+.ab-info{flex:1;min-width:0}
+.ab-name{font-size:21px;font-weight:700}
+.ab-msg{font-size:16px;color:var(--muted)}
+.ab-joy{display:flex;align-items:center;gap:6px}
+.ab-joy i{display:block;width:110px;height:12px;border-radius:8px;background:var(--soft);border:2px solid var(--line);overflow:hidden}
+.ab-joy i b{display:block;height:100%;background:var(--pink)}
+.ab-close{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);background:var(--soft);font-size:18px;font-weight:700}
+.ab-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.ab-btns button{width:74px;height:74px;border-radius:18px;border:3px solid var(--line);background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:14px;font-weight:600;box-shadow:0 3px 0 var(--line)}
+.ab-btns button span{font-size:30px;line-height:1}
+.ab-btns button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.ab-btns button:disabled{opacity:.4;box-shadow:none}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(20,32,50,.55);display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}
+.card{background:var(--panel);color:var(--ink);border:4px solid var(--line);border-radius:26px;padding:22px 24px;max-width:640px;width:100%;max-height:100%;overflow:auto;box-shadow:0 6px 0 var(--line);animation:pop .25s}
+.card h1{font-size:44px;margin:0;line-height:1}
+.card h2{font-size:30px;margin:0 0 8px}
+.card h3{font-size:20px;margin:18px 0 8px}
+.card p{font-size:19px;line-height:1.4;margin:6px 0}
+.row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+.btn{font-weight:600;font-size:20px;border:3px solid var(--line);border-radius:16px;padding:10px 20px;background:var(--accent);color:var(--accent-ink);min-height:54px;box-shadow:0 4px 0 var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn:disabled{opacity:.45}
+.title{display:flex;align-items:center;gap:16px}
+.title .logo{width:96px;height:96px;flex:none}
+.title .logo svg{width:100%;height:100%}
+.title p{color:var(--muted)}
+.plist{display:grid;gap:8px}
+.pbtn{display:flex;align-items:center;gap:12px;text-align:left;background:var(--soft);border:3px solid var(--line);border-radius:16px;padding:8px 14px;min-height:60px}
+.pbtn .pav{font-size:34px}
+.pbtn b{display:block;font-size:20px}
+.pbtn small{font-size:15px;color:var(--muted)}
+.newp{display:flex;flex-direction:column;gap:10px}
+.newp input{font:inherit;font-size:20px;padding:10px 14px;border-radius:14px;border:3px solid var(--line);background:var(--soft);color:var(--ink);-webkit-user-select:text;user-select:text}
+.avs{display:flex;gap:6px;flex-wrap:wrap}
+.av{width:52px;height:52px;border-radius:14px;border:3px solid transparent;background:var(--soft);font-size:28px}
+.av.on{border-color:var(--line);background:var(--accent)}
+.tips{display:grid;gap:8px;margin:10px 0}
+.tip{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:14px;padding:8px 12px;font-size:18px}
+.tip span{font-size:28px;width:36px;text-align:center}
+.stats{display:flex;gap:12px;margin:12px 0}
+.stats div{flex:1;background:var(--soft);border:3px solid var(--line);border-radius:18px;padding:10px;text-align:center;font-size:18px}
+.stats b{display:block;font-size:36px}
+
+/* Shop */
+.tabs{display:flex;gap:6px;margin:6px 0 12px}
+.tabs button{flex:1;border:3px solid var(--line);border-radius:14px;background:var(--soft);padding:8px;font-weight:600;font-size:17px;min-height:48px}
+.tabs button.on{background:var(--accent);color:var(--accent-ink)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.item{border:3px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:4px;background:var(--soft)}
+.item .ic{font-size:36px;line-height:1.1}
+.item .sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--line)}
+.item b{font-size:18px}
+.item small{font-size:14px;color:var(--muted);flex:1}
+.item button{margin-top:6px;border:3px solid var(--line);border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;min-height:44px}
+.item button:disabled{opacity:.45}
+.item.own button{background:#7cc35a;color:#fff;opacity:1}
+
+/* Gallery */
+.gal{display:grid;gap:10px}
+.gdog{display:flex;gap:12px;align-items:center;background:var(--soft);border:3px solid var(--line);border-radius:18px;padding:8px 12px}
+.gdog .gs{width:76px;height:76px;flex:none}
+.gdog .gs svg{width:100%;height:100%}
+.gdog b{font-size:20px}
+.gdog p{font-size:15px;margin:2px 0;color:var(--muted)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chips span{font-size:13px;border-radius:999px;padding:1px 8px;border:2px solid var(--line);background:var(--panel);opacity:.45}
+.chips span.k{opacity:1;background:var(--accent);color:var(--accent-ink)}
+
+/* Training */
+.train{text-align:center}
+.train .bigdog{width:120px;height:120px;margin:4px auto}
+.train .bigdog svg{width:100%;height:100%;overflow:visible}
+.status{font-size:21px;font-weight:600;min-height:30px;margin:4px 0}
+.dots{display:flex;gap:6px;justify-content:center;margin:6px 0 10px}
+.dots i{width:16px;height:16px;border-radius:50%;border:3px solid var(--line);background:var(--panel)}
+.dots i.f{background:var(--pink)}
+.pads{display:grid;grid-template-columns:repeat(2,minmax(0,120px));gap:12px;justify-content:center}
+.pad{aspect-ratio:1;border-radius:26px;border:4px solid #22324a;font-size:46px;box-shadow:0 5px 0 #22324a;transition:transform .08s,filter .08s}
+.pad.lit{filter:brightness(1.35) saturate(1.2);transform:scale(1.08);box-shadow:0 0 0 6px #fff,0 0 0 10px #22324a}
+.pad:disabled{cursor:default}
+.trick-sitt svg{animation:t-sitt .9s ease-in-out 2}
+@keyframes t-sitt{50%{transform:scaleY(.82) translateY(10px)}}
+.trick-tass svg{animation:t-tass .8s ease-in-out 2}
+@keyframes t-tass{50%{transform:rotate(-14deg)}}
+.trick-ligg svg{animation:t-ligg 1.2s ease-in-out 2}
+@keyframes t-ligg{50%{transform:scaleY(.65) scaleX(1.12) translateY(22px)}}
+.trick-snurra svg{animation:t-snurra 1s ease-in-out 2}
+@keyframes t-snurra{to{transform:rotateY(360deg)}}
+.trick-rulla svg{animation:t-rulla 1.1s ease-in-out 2}
+@keyframes t-rulla{to{transform:rotate(360deg)}}
+.cols{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.col{width:64px;height:64px;border-radius:50%;border:4px solid var(--line)}
+.col.none{background:var(--soft);font-size:14px;font-weight:600}
+/* Bygga moduler */
+.plot{position:absolute;left:578px;top:32px;width:350px;height:566px;border:4px dashed #fff;border-radius:18px;background-image:linear-gradient(rgba(255,255,255,.28) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.28) 2px,transparent 2px);background-size:20px 20px;display:none;pointer-events:none}
+#scene.building .plot{display:block}
+#scene.building #ents{pointer-events:none}
+#mods{position:absolute;inset:0;pointer-events:none}
+.mod{position:absolute;transform:translate(-50%,-50%)}
+.mod svg,#ghost svg{width:100%;height:100%;display:block;overflow:visible}
+#scene.building .mod{pointer-events:auto;cursor:pointer}
+.mod.lift{opacity:.3}
+#ghost{position:absolute;transform:translate(-50%,-50%);pointer-events:none;opacity:.85;z-index:5000;animation:ghostp .8s ease-in-out infinite alternate}
+#ghost::after{content:"";position:absolute;inset:-8px;border:4px dashed #7cc35a;border-radius:18px;background:rgba(124,195,90,.15)}
+#ghost.bad::after{border-color:#e53935;background:rgba(229,57,53,.2)}
+@keyframes ghostp{to{transform:translate(-50%,-50%) scale(1.03)}}
+#buildbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--panel);border:4px solid var(--line);border-radius:22px;padding:10px 14px;z-index:46;width:min(560px,96%);box-shadow:0 5px 0 var(--line);display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;font-size:19px;font-weight:600}
+.bb-btns{display:flex;gap:10px}
+.dog .soap{position:absolute;left:-30px;top:-70px;font-size:26px;display:none;pointer-events:none}
+.dog.act-tvatt .soap{display:block;animation:toss .6s ease-in-out infinite alternate}
+.dog.act-tvatt .flipper svg{animation:shake .15s linear infinite alternate}
+@keyframes shake{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+.dog .mud{position:absolute;left:-28px;top:-44px;width:60px;height:34px;display:none;pointer-events:none;background:radial-gradient(circle at 18% 40%,#7a5230 0 6px,transparent 7px),radial-gradient(circle at 55% 65%,#7a5230 0 8px,transparent 9px),radial-gradient(circle at 85% 30%,#7a5230 0 5px,transparent 6px),radial-gradient(circle at 40% 20%,#8d6040 0 4px,transparent 5px)}
+.dog.dirty .mud{display:block}
+/* Agility */
+.ag-track{position:relative;height:170px;background:linear-gradient(#cfeefe 0 58%,#9fd977 58%);border:4px solid var(--line);border-radius:20px;overflow:hidden;margin:10px 0;cursor:pointer}
+.ag-h{position:absolute;bottom:26px;width:12px;height:48px;margin-left:-6px;background:repeating-linear-gradient(#e53935 0 8px,#fff 8px 16px);border:2px solid #22324a;border-radius:4px;transform-origin:50% 100%;transition:transform .3s}
+.ag-h.ok{box-shadow:0 0 0 4px #7cc35a}
+.ag-h.down{transform:rotate(80deg)}
+.ag-flag{position:absolute;right:8px;bottom:34px;font-size:30px}
+.ag-dog{position:absolute;bottom:12px;left:4%;width:86px;height:86px;margin-left:-43px}
+.ag-dog .agf{width:100%;height:100%;transform:scaleX(-1)}
+.ag-dog svg{width:100%;height:100%;overflow:visible}
+.ag-dog.jump{animation:agj .6s ease-out}
+@keyframes agj{50%{transform:translateY(-64px)}}
+.ag-jump{min-width:220px;font-size:26px}
+/* Minispel för aktiviteter */
+.mg-help{font-size:19px}
+.mg-area{margin:8px auto;max-width:460px;position:relative}
+.big{font-size:24px;min-width:200px}
+.recipe{display:flex;gap:10px;align-items:center;justify-content:center;font-size:19px;font-weight:600;background:var(--soft);border:3px solid var(--line);border-radius:14px;padding:6px 10px}
+.recipe span{font-size:32px;opacity:.45;filter:grayscale(1)}
+.recipe span.ok{opacity:1;filter:none}
+.bowlwrap{display:flex;justify-content:center;margin:12px 0}
+.bowl{width:180px;height:92px;border-radius:0 0 92px 92px;background:#ff6f91;border:4px solid #22324a;overflow:hidden;display:flex;justify-content:center}
+.mix{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;font-size:30px;padding-top:8px}
+.bowl.stir .mix{animation:stir .4s ease-in-out}
+@keyframes stir{50%{transform:rotate(30deg) scale(.9)}}
+.bowl.done .mix{filter:sepia(.5) saturate(1.4)}
+.shelf{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.ing{aspect-ratio:1;border-radius:16px;border:3px solid var(--line);background:var(--panel);font-size:32px;box-shadow:0 3px 0 var(--line)}
+.ing:disabled{opacity:.3;box-shadow:none}
+.ing.no{animation:no .35s}
+@keyframes no{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (max-width:520px){.shelf{grid-template-columns:repeat(3,1fr)}}
+.glasswrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;height:190px}
+.jug{font-size:58px;align-self:flex-start;transition:transform .2s}
+.jug.on{transform:rotate(-40deg)}
+.wbowl{position:relative;width:110px;height:170px;border:4px solid #22324a;border-top:none;border-radius:0 0 22px 22px;background:#fff;overflow:hidden}
+.wfill{position:absolute;left:0;right:0;bottom:0;height:0;background:#4fa3e0}
+.wband{position:absolute;left:0;right:0;border-top:3px dashed #43a047;border-bottom:3px dashed #43a047;background:rgba(124,195,90,.3);z-index:1}
+.wbowl.spill{animation:no .4s 2}
+.pour{touch-action:none;-webkit-touch-callout:none}
+.scrub{position:relative;width:250px;height:250px;margin:0 auto;touch-action:none;border-radius:24px;background:#cfeefe;border:4px solid var(--line);cursor:pointer;overflow:hidden}
+.scrub .scdog{position:absolute;inset:20px;pointer-events:none}
+.scrub .scdog svg{width:100%;height:100%}
+.spot{position:absolute;width:44px;height:34px;margin:-17px 0 0 -22px;border-radius:50%;background:#7a5230;border:2px solid #5a3a1e;transition:opacity .2s,transform .2s;display:grid;place-items:center}
+.spot.clean{background:none;border:none;font-size:26px}
+.scrub.rinse::after{content:"💧 💧 💧";position:absolute;left:0;right:0;top:-20px;text-align:center;font-size:32px;animation:rain 1.1s linear forwards}
+@keyframes rain{to{transform:translateY(260px);opacity:0}}
+.field{position:relative;height:150px;background:#9fd977;border:4px solid var(--line);border-radius:20px;overflow:hidden}
+.zone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.45);border-left:3px dashed #fff;border-right:3px dashed #fff}
+.needle{position:absolute;top:0;bottom:0;width:8px;margin-left:-4px;background:#ff6f91;border:2px solid #22324a;border-radius:4px}
+.tdog{position:absolute;bottom:4px;width:72px;height:72px;margin-left:-36px}
+.tdog svg{width:100%;height:100%;overflow:visible}
+.tdog.catch{animation:agj .6s ease-out}
+.tball{position:absolute;font-size:28px;margin-left:-14px}
+.nap{position:relative;width:250px;height:200px;margin:0 auto;border-radius:24px;background:#ffc6d3;border:4px solid var(--line);cursor:pointer;display:grid;place-items:center;overflow:hidden}
+.nap .ndog{width:150px;height:150px;transition:transform .5s;pointer-events:none}
+.nap .ndog svg{width:100%;height:100%}
+.nap.sleep .ndog{transform:rotate(-8deg) scaleY(.85)}
+.calm{width:230px;height:18px;margin:10px auto;border-radius:10px;border:3px solid var(--line);background:var(--soft);overflow:hidden}
+.calm i{display:block;height:100%;width:0;background:#b39ddb;transition:width .3s}
+.pat{position:absolute;font-size:26px;animation:rise 1.2s forwards;pointer-events:none}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <button id="who" class="chip" aria-label="Meny"><span id="whoAv">🐶</span><span id="whoName">–</span></button>
+    <div class="day"><b id="dayLbl">Dag 1</b><span id="roster"></span></div>
+    <div class="sp"></div>
+    <div class="chip" title="Pengar">💰 <b id="money">0</b></div>
+    <div class="chip" title="Stjärnor används för att bygga">⭐ <b id="stars">0</b></div>
+    <button class="hb" id="bBuild">🔨<span>Bygg</span></button>
+    <button class="hb" id="bShop">🛒<span>Butik</span></button>
+    <button class="hb" id="bDogs">🐶<span>Hundar</span></button>
+    <button class="hb" id="bMenu">⏸<span>Paus</span></button>
+  </header>
+  <main id="stage">
+    <div id="scene">
+      <svg class="bg" viewBox="0 0 1000 625" aria-hidden="true">
+        <rect x="0" y="0" width="1000" height="625" fill="#9fd977"/>
+        <g fill="#b4e48f" opacity=".7">
+          <ellipse cx="700" cy="160" rx="60" ry="24"/><ellipse cx="820" cy="430" rx="80" ry="28"/>
+          <ellipse cx="660" cy="520" rx="50" ry="18"/><ellipse cx="860" cy="240" rx="40" ry="16"/>
+        </g>
+        <g fill="#7cc35a"><circle cx="640" cy="230" r="3"/><circle cx="760" cy="350" r="3"/><circle cx="880" cy="140" r="3"/><circle cx="720" cy="560" r="3"/><circle cx="610" cy="420" r="3"/></g>
+        <path d="M945 335 C840 335 720 300 570 300" stroke="#ecd9a6" stroke-width="44" fill="none" stroke-linecap="round"/>
+        <g stroke="#22324a" stroke-width="3" fill="#fff8ea">
+          <rect x="568" y="8" width="380" height="14" rx="6"/>
+          <rect x="934" y="8" width="14" height="285" rx="6"/>
+          <rect x="934" y="372" width="14" height="245" rx="6"/>
+          <rect x="568" y="604" width="380" height="14" rx="6"/>
+        </g>
+        <g fill="#fff8ea" stroke="#22324a" stroke-width="2.5">
+          <circle cx="600" cy="15" r="7"/><circle cx="680" cy="15" r="7"/><circle cx="760" cy="15" r="7"/><circle cx="840" cy="15" r="7"/><circle cx="941" cy="15" r="8"/>
+          <circle cx="941" cy="100" r="7"/><circle cx="941" cy="190" r="7"/><circle cx="941" cy="293" r="9"/><circle cx="941" cy="372" r="9"/><circle cx="941" cy="460" r="7"/><circle cx="941" cy="540" r="7"/><circle cx="941" cy="611" r="8"/>
+          <circle cx="680" cy="611" r="7"/><circle cx="760" cy="611" r="7"/><circle cx="840" cy="611" r="7"/>
+        </g>
+        <g stroke="#22324a" stroke-width="3" fill="#ffcc33">
+          <rect x="902" y="282" width="40" height="10" rx="4" transform="rotate(-35 941 290)"/>
+          <rect x="902" y="373" width="40" height="10" rx="4" transform="rotate(35 941 377)"/>
+        </g>
+        <g transform="translate(760 70)">
+          <rect x="-4" y="0" width="8" height="34" fill="#8d6e63" stroke="#22324a" stroke-width="2"/>
+          <rect x="-62" y="-26" width="124" height="34" rx="10" fill="#fff8ea" stroke="#22324a" stroke-width="3"/>
+          <text x="0" y="-3" text-anchor="middle" font-size="19" font-weight="600" fill="#22324a" font-family="Fredoka, sans-serif">Springytan</text>
+        </g>
+        <g stroke="#22324a" stroke-width="3">
+          <circle cx="885" cy="555" r="40" fill="#5fae4a"/><circle cx="850" cy="585" r="28" fill="#6bbf59"/><circle cx="905" cy="515" r="22" fill="#6bbf59"/>
+          <circle cx="612" cy="585" r="22" fill="#6bbf59"/><circle cx="638" cy="596" r="16" fill="#5fae4a"/>
+        </g>
+        <g fill="#ff6f91"><circle cx="872" cy="540" r="5"/><circle cx="898" cy="566" r="5"/><circle cx="615" cy="578" r="4"/></g>
+        <g id="d-koja" style="display:none" stroke="#22324a" stroke-width="3">
+          <rect x="760" y="470" width="80" height="58" rx="6" fill="#4fa3e0"/>
+          <polygon points="750,474 800,432 850,474" fill="#ff6f91"/>
+          <path d="M786 528 v-26 a14 14 0 0 1 28 0 v26z" fill="#22324a"/>
+        </g>
+        <g id="d-vimplar" style="display:none">
+          <path d="M572 34 Q760 70 936 34" stroke="#22324a" stroke-width="2.5" fill="none"/>
+          <g stroke="#22324a" stroke-width="2">
+            <polygon points="600,40 616,43 606,62" fill="#ff6f91"/><polygon points="640,46 656,49 645,68" fill="#ffcc33"/>
+            <polygon points="680,50 696,52 686,72" fill="#4fa3e0"/><polygon points="720,52 736,53 727,74" fill="#7cc35a"/>
+            <polygon points="760,52 776,52 768,74" fill="#ff6f91"/><polygon points="800,51 816,50 809,72" fill="#ffcc33"/>
+            <polygon points="840,48 856,46 850,68" fill="#4fa3e0"/><polygon points="880,43 896,41 891,62" fill="#7cc35a"/>
+          </g>
+        </g>
+        <g id="d-boll" style="display:none" stroke="#22324a" stroke-width="3">
+          <circle cx="690" cy="440" r="14" fill="#d4e157"/><path d="M678 432 q12 8 24 0" fill="none" stroke-width="2"/>
+        </g>
+        <rect x="10" y="8" width="560" height="609" rx="14" fill="#4fa3e0" stroke="#22324a" stroke-width="4"/>
+        <rect x="26" y="70" width="528" height="532" fill="#f2d7a8"/>
+        <g stroke="#e2c08a" stroke-width="2">
+          <line x1="26" y1="110" x2="554" y2="110"/><line x1="26" y1="150" x2="554" y2="150"/><line x1="26" y1="190" x2="554" y2="190"/>
+          <line x1="26" y1="230" x2="554" y2="230"/><line x1="26" y1="270" x2="554" y2="270"/><line x1="26" y1="310" x2="554" y2="310"/>
+          <line x1="26" y1="350" x2="554" y2="350"/><line x1="26" y1="390" x2="554" y2="390"/><line x1="26" y1="430" x2="554" y2="430"/>
+          <line x1="26" y1="470" x2="554" y2="470"/><line x1="26" y1="510" x2="554" y2="510"/><line x1="26" y1="550" x2="554" y2="550"/><line x1="26" y1="590" x2="554" y2="590"/>
+        </g>
+        <rect x="26" y="24" width="528" height="46" fill="#fff4dc" stroke="#22324a" stroke-width="3"/>
+        <g fill="#bfe6fb" stroke="#22324a" stroke-width="3">
+          <rect x="60" y="31" width="90" height="30" rx="5"/><rect x="420" y="31" width="90" height="30" rx="5"/>
+        </g>
+        <line x1="105" y1="31" x2="105" y2="61" stroke="#22324a" stroke-width="2"/><line x1="465" y1="31" x2="465" y2="61" stroke="#22324a" stroke-width="2"/>
+        <rect x="200" y="28" width="180" height="36" rx="12" fill="#ff6f91" stroke="#22324a" stroke-width="3"/>
+        <text x="290" y="53" text-anchor="middle" font-size="21" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">Hunddagiset</text>
+        <rect x="548" y="262" width="26" height="78" fill="#f2d7a8"/>
+        <rect x="578" y="270" width="26" height="62" rx="5" fill="#a1887f" stroke="#22324a" stroke-width="2.5"/>
+        <rect x="350" y="112" width="180" height="70" rx="14" fill="#fff4dc" stroke="#22324a" stroke-width="2.5"/>
+        <g stroke="#22324a" stroke-width="3">
+          <ellipse cx="395" cy="150" rx="24" ry="13" fill="#ff6f91"/><ellipse cx="395" cy="148" rx="16" ry="7" fill="#9c6b3d" stroke-width="0"/>
+          <ellipse cx="475" cy="150" rx="24" ry="13" fill="#4fa3e0"/><ellipse cx="475" cy="148" rx="16" ry="7" fill="#bfe6fb" stroke-width="0"/>
+        </g>
+        <g id="d-matskal" style="display:none" stroke="#22324a" stroke-width="3">
+          <ellipse cx="395" cy="150" rx="32" ry="17" fill="#ffcc33"/><ellipse cx="395" cy="147" rx="23" ry="10" fill="#9c6b3d" stroke-width="0"/>
+          <circle cx="388" cy="144" r="3" fill="#7a5230" stroke-width="0"/><circle cx="402" cy="146" r="3" fill="#7a5230" stroke-width="0"/>
+        </g>
+        <g id="d-fontan" style="display:none" stroke="#22324a" stroke-width="3">
+          <ellipse cx="475" cy="150" rx="30" ry="16" fill="#7cc35a"/><ellipse cx="475" cy="147" rx="22" ry="9" fill="#bfe6fb" stroke-width="0"/>
+          <path d="M475 145 q-10 -22 -18 -6 M475 145 q10 -22 18 -6" stroke="#4fa3e0" stroke-width="3" fill="none"/>
+        </g>
+        <g id="d-godis" style="display:none" stroke="#22324a" stroke-width="3">
+          <rect x="318" y="118" width="26" height="34" rx="7" fill="#e3f4ff"/><rect x="315" y="112" width="32" height="10" rx="4" fill="#ff6f91"/>
+          <circle cx="326" cy="138" r="4" fill="#c58a4a" stroke-width="0"/><circle cx="336" cy="144" r="4" fill="#c58a4a" stroke-width="0"/>
+        </g>
+        <ellipse cx="160" cy="505" rx="132" ry="88" fill="#ffc6d3" stroke="#22324a" stroke-width="3"/>
+        <g id="d-matta" style="display:none">
+          <ellipse cx="160" cy="505" rx="132" ry="88" fill="#e9555f" stroke="#22324a" stroke-width="3"/>
+          <ellipse cx="160" cy="505" rx="108" ry="68" fill="none" stroke="#ffcc33" stroke-width="5" stroke-dasharray="10 8"/>
+        </g>
+        <text x="160" y="434" text-anchor="middle" font-size="17" font-weight="600" fill="#22324a" font-family="Fredoka, sans-serif">Myshörnet</text>
+        <g stroke="#22324a" stroke-width="3">
+          <ellipse cx="95" cy="462" rx="36" ry="21" fill="#b39ddb"/><ellipse cx="95" cy="461" rx="25" ry="13" fill="#e2d8f5" stroke-width="0"/>
+          <ellipse cx="205" cy="510" rx="36" ry="21" fill="#b39ddb"/><ellipse cx="205" cy="509" rx="25" ry="13" fill="#e2d8f5" stroke-width="0"/>
+          <ellipse cx="115" cy="548" rx="36" ry="21" fill="#b39ddb"/><ellipse cx="115" cy="547" rx="25" ry="13" fill="#e2d8f5" stroke-width="0"/>
+        </g>
+        <g id="d-badd" style="display:none" stroke="#22324a" stroke-width="3">
+          <ellipse cx="95" cy="462" rx="42" ry="25" fill="#ffcc33"/><ellipse cx="95" cy="461" rx="30" ry="16" fill="#fff2c2" stroke-width="0"/>
+          <ellipse cx="205" cy="510" rx="42" ry="25" fill="#ffcc33"/><ellipse cx="205" cy="509" rx="30" ry="16" fill="#fff2c2" stroke-width="0"/>
+          <ellipse cx="115" cy="548" rx="42" ry="25" fill="#ffcc33"/><ellipse cx="115" cy="547" rx="30" ry="16" fill="#fff2c2" stroke-width="0"/>
+        </g>
+        <g id="d-lampa" style="display:none">
+          <circle cx="282" cy="430" r="44" fill="#fff3b0" opacity=".55"/>
+          <rect x="279" y="430" width="6" height="40" fill="#22324a"/>
+          <path d="M266 432 h32 l-6 -22 h-20z" fill="#ffcc33" stroke="#22324a" stroke-width="3"/>
+        </g>
+        <g stroke="#22324a" stroke-width="3">
+          <rect x="480" y="520" width="56" height="38" rx="8" fill="#c58a4a"/>
+          <circle cx="496" cy="516" r="8" fill="#ff6f91"/><circle cx="516" cy="512" r="9" fill="#7cc35a"/>
+        </g>
+        <g id="d-blommor" style="display:none" stroke="#22324a" stroke-width="2.5">
+          <g transform="translate(46 96)"><rect x="-10" y="0" width="20" height="18" rx="4" fill="#c97b5a"/><circle cx="-6" cy="-6" r="6" fill="#ff6f91"/><circle cx="6" cy="-8" r="6" fill="#ffcc33"/><circle cx="0" cy="-14" r="6" fill="#ff6f91"/></g>
+          <g transform="translate(530 220)"><rect x="-10" y="0" width="20" height="18" rx="4" fill="#c97b5a"/><circle cx="-6" cy="-6" r="6" fill="#b39ddb"/><circle cx="6" cy="-8" r="6" fill="#ff6f91"/><circle cx="0" cy="-14" r="6" fill="#ffcc33"/></g>
+          <g transform="translate(600 245)"><rect x="-10" y="0" width="20" height="18" rx="4" fill="#c97b5a"/><circle cx="-6" cy="-6" r="6" fill="#ff6f91"/><circle cx="6" cy="-8" r="6" fill="#4fa3e0"/><circle cx="0" cy="-14" r="6" fill="#ffcc33"/></g>
+          <g transform="translate(600 352)"><rect x="-10" y="0" width="20" height="18" rx="4" fill="#c97b5a"/><circle cx="-6" cy="-6" r="6" fill="#ffcc33"/><circle cx="6" cy="-8" r="6" fill="#ff6f91"/><circle cx="0" cy="-14" r="6" fill="#b39ddb"/></g>
+        </g>
+      </svg>
+      <div class="plot"></div>
+      <div id="mods"></div>
+      <div id="ents"></div>
+    </div>
+    <div id="buildbar" class="hidden"><span id="bbText"></span><div class="bb-btns"><button class="btn ghost" id="bbCancel">Avbryt</button><button class="btn" id="bbOk">Bygg här</button></div></div>
+    <div id="hint" class="hidden"></div>
+    <div id="actionbar" class="hidden">
+      <div class="ab-head">
+        <div class="ab-av" id="abAv"></div>
+        <div class="ab-info">
+          <div class="ab-name" id="abName"></div>
+          <div class="ab-joy"><span>❤️</span><i><b id="abJoy"></b></i></div>
+          <div class="ab-msg" id="abMsg"></div>
+        </div>
+        <button class="ab-close" id="abClose" aria-label="Stäng">✕</button>
+      </div>
+      <div class="ab-btns">
+        <button data-act="mat"><span>🍖</span>Mat</button>
+        <button data-act="vatten"><span>💧</span>Vatten</button>
+        <button data-act="lek"><span>🎾</span>Leka</button>
+        <button data-act="vila"><span>💤</span>Vila</button>
+        <button data-act="trana"><span>🎯</span>Träna</button>
+        <button data-act="tvatt" id="abWash"><span>🛁</span>Tvätta</button>
+        <button data-act="agility" id="abAgi"><span>🏁</span>Agility</button>
+        <button data-act="halsband" id="abCollar"><span>🎀</span>Halsband</button>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="modal" class="hidden"></div>
+
+<script>
+/* ---------- Grunddata ---------- */
+const W=1000,H=625;
+const OWNER={x:972,y:352};
+const GATE={x:902,y:335};
+const DOOR_IN={x:522,y:300}, DOOR_OUT={x:602,y:300};
+const FOOD={x:395,y:188}, WATER={x:475,y:188};
+const BEDS=[{x:95,y:472},{x:205,y:520},{x:115,y:558}];
+const HOUSE={x1:80,x2:520,y1:215,y2:385};
+const YARD={x1:625,x2:895,y1:95,y2:575};
+const PLOT={x1:578,x2:928,y1:32,y2:598};
+const MODULES=[
+  {id:'tvatt',name:'Tvättplats',icon:'🛁',price:8,w:120,h:86,desc:'Hundar blir ibland smutsiga när de leker. Här kan du tvätta dem.'},
+  {id:'altan',name:'Altan',icon:'☀️',price:10,w:150,h:100,desc:'Hundarna kan vila i solen. Det gör dem extra glada.'},
+  {id:'pool',name:'Plaskpool',icon:'💦',price:12,w:120,h:86,desc:'Hundarna kan leka i poolen. Det gör dem extra glada.'},
+  {id:'agility',name:'Agilitybana',icon:'🏁',price:15,w:210,h:96,desc:'Hundarna kan köra agility. Hjälp dem hoppa över hindren!'}
+];
+
+const NEEDS={
+  mat:{icon:'🍖',label:'ha mat'},
+  vatten:{icon:'💧',label:'ha vatten'},
+  lek:{icon:'🎾',label:'leka'},
+  vila:{icon:'💤',label:'vila'},
+  trana:{icon:'🎯',label:'lära sig ett trix'},
+  tvatt:{icon:'🛁',label:'bli tvättad'},
+  agility:{icon:'🏁',label:'köra agility'}
+};
+const TRICKS=[
+  {id:'sitt',name:'Sitt',len:3,pay:10},
+  {id:'tass',name:'Ge tass',len:3,pay:12},
+  {id:'ligg',name:'Ligg',len:4,pay:15},
+  {id:'snurra',name:'Snurra',len:4,pay:18},
+  {id:'rulla',name:'Rulla runt',len:5,pay:22}
+];
+const REGULARS=[
+  {id:'bamse',name:'Bamse',pron:'honom',body:'#9a6233',ear:'#5e3a1c',muzzle:'#dcb68c',earType:'flop',spot:null,size:1.15,
+   about:'Bamse är gammal och lugn. Han älskar myshörnet.',w:{mat:2,vatten:1,lek:1,vila:4,trana:1}},
+  {id:'sixten',name:'Sixten',pron:'honom',body:'#f4f1ea',ear:'#2b2b2b',muzzle:'#ffffff',earType:'point',spot:'#2b2b2b',size:.85,
+   about:'Sixten är liten och busig. Han vill leka hela tiden!',w:{mat:1,vatten:1,lek:4,vila:1,trana:2}},
+  {id:'molly',name:'Molly',pron:'henne',body:'#e3b257',ear:'#c48a2c',muzzle:'#f6dca6',earType:'flop',spot:null,size:1,
+   about:'Molly är glad och nästan alltid hungrig.',w:{mat:4,vatten:2,lek:2,vila:1,trana:1}},
+  {id:'pixel',name:'Pixel',pron:'henne',body:'#3b3b40',ear:'#232326',muzzle:'#b08a6a',earType:'point',spot:null,size:.95,
+   about:'Pixel är smart och nyfiken. Hon gillar att lära sig trix.',w:{mat:1,vatten:1,lek:2,vila:1,trana:4}},
+  {id:'lufsen',name:'Lufsen',pron:'honom',body:'#a7adb3',ear:'#6f767d',muzzle:'#dde1e4',earType:'flop',spot:'#ffffff',size:1.05,
+   about:'Lufsen är lufsig och snäll. Han blir ofta törstig.',w:{mat:1,vatten:4,lek:2,vila:2,trana:1}}
+];
+const NEW_NAMES=[['Kexet','honom'],['Nala','henne'],['Rufus','honom'],['Lilo','henne'],['Bosse','honom'],['Mimmi','henne'],
+  ['Tasso','honom'],['Sally','henne'],['Smulan','henne'],['Totte','honom'],['Doris','henne'],['Elvis','honom']];
+const NEW_LOOKS=[
+  {body:'#c98b4f',ear:'#8a5a2b',muzzle:'#f0d2a8'},{body:'#efe6d6',ear:'#c9a97d',muzzle:'#ffffff'},
+  {body:'#5b4636',ear:'#3a2c21',muzzle:'#a88a6c'},{body:'#d8c06a',ear:'#a8902f',muzzle:'#f3e3a8'},
+  {body:'#e58a5a',ear:'#b5592c',muzzle:'#f7cfb5'},{body:'#8d8f96',ear:'#55575e',muzzle:'#c9cbd0'}
+];
+const SHOP=[
+  {id:'matskal',cat:'nytta',icon:'🥣',name:'Stor matskål',desc:'Mat gör hundarna extra glada.',price:40,boost:'mat'},
+  {id:'fontan',cat:'nytta',icon:'⛲',name:'Vattenfontän',desc:'Vatten gör hundarna extra glada.',price:40,boost:'vatten'},
+  {id:'boll',cat:'nytta',icon:'🎾',name:'Gnisslande boll',desc:'Lek gör hundarna extra glada.',price:45,boost:'lek'},
+  {id:'badd',cat:'nytta',icon:'🛏️',name:'Mjuka bäddar',desc:'Vila gör hundarna extra glada.',price:50,boost:'vila'},
+  {id:'godis',cat:'nytta',icon:'🍪',name:'Godisburk',desc:'Du får 5 kr extra varje gång ett trix lyckas.',price:60},
+  {id:'blommor',cat:'pynt',icon:'🌷',name:'Blomkrukor',desc:'Mysigare dagis. Ägarna ger 1 kr mer i dricks.',price:25},
+  {id:'lampa',cat:'pynt',icon:'💡',name:'Golvlampa',desc:'Mysigare dagis. Ägarna ger 1 kr mer i dricks.',price:30},
+  {id:'vimplar',cat:'pynt',icon:'🎏',name:'Vimpelflaggor',desc:'Mysigare dagis. Ägarna ger 1 kr mer i dricks.',price:30},
+  {id:'matta',cat:'pynt',icon:'🧶',name:'Röd matta',desc:'Mysigare dagis. Ägarna ger 1 kr mer i dricks.',price:35},
+  {id:'koja',cat:'pynt',icon:'🏠',name:'Hundkoja',desc:'Mysigare dagis. Ägarna ger 1 kr mer i dricks.',price:60},
+  {id:'hb-rod',cat:'halsband',color:'#e53935',name:'Rött halsband',desc:'Ge det till en hund du gillar.',price:15},
+  {id:'hb-bla',cat:'halsband',color:'#1e88e5',name:'Blått halsband',desc:'Ge det till en hund du gillar.',price:15},
+  {id:'hb-gul',cat:'halsband',color:'#fdd835',name:'Gult halsband',desc:'Ge det till en hund du gillar.',price:15},
+  {id:'hb-rosa',cat:'halsband',color:'#ec407a',name:'Rosa halsband',desc:'Ge det till en hund du gillar.',price:15},
+  {id:'hb-gron',cat:'halsband',color:'#43a047',name:'Grönt halsband',desc:'Ge det till en hund du gillar.',price:15},
+  {id:'hb-guld',cat:'halsband',color:'#d4af37',name:'Guldhalsband',desc:'Extra fint! Ge det till en riktig stjärna.',price:40}
+];
+const AVATARS=['🐶','🐱','🦊','🐰','🐼','🐸','🦁','🐨'];
+const PADS=[{i:'🐾',c:'#ff8a65',f:392},{i:'🦴',c:'#64b5f6',f:494},{i:'🍪',c:'#ffd54f',f:587},{i:'✋',c:'#81c784',f:659}];
+const OWNER_SHIRTS=['#ff6f91','#4fa3e0','#7cc35a','#ffcc33','#b39ddb','#ff8a65'];
+const OWNER_SKIN=['#f6d7bd','#f1c7a3','#d9a37c','#a8724f','#7a4e33'];
+const OWNER_HAIR=['#3b2a1a','#7a4a22','#e0b04a','#1c1c1c','#b5562b','#9e9e9e'];
+
+/* ---------- Hjälpfunktioner ---------- */
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function wpick(w){let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k}return Object.keys(w)[0]}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function randIn(r){return {x:rand(r.x1,r.x2),y:rand(r.y1,r.y2)}}
+function region(p){return p.x<560?'house':'yard'}
+
+/* ---------- Sparning ---------- */
+const KEY='hunddagis.v1';
+function loadSave(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.profiles) return s;}catch(e){}
+  return {profiles:{},current:null,sound:true};
+}
+let save=loadSave();
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}}
+function P(){return save.profiles[save.current]}
+function ensureDogs(p){
+  p.dogs=p.dogs||{}; p.owned=p.owned||{}; p.collars=p.collars||[]; p.modules=p.modules||[];
+  for(const r of REGULARS) if(!p.dogs[r.id]) p.dogs[r.id]={tricks:[],visits:0,collar:null};
+}
+
+/* ---------- Ljud ---------- */
+let AC=null;
+function tone(f,d=.15,type='sine',vol=.12,delay=0){
+  if(!save.sound) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended') AC.resume();
+    const t=AC.currentTime+delay, o=AC.createOscillator(), g=AC.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+d);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+d+.02);
+  }catch(e){}
+}
+const sCoin=()=>{tone(880,.1,'triangle');tone(1320,.18,'triangle',.12,.08)};
+const sWoof=()=>{tone(220,.09,'square',.06);tone(180,.12,'square',.06,.12)};
+const sHappy=()=>{tone(660,.1);tone(880,.1,'sine',.12,.1);tone(1100,.2,'sine',.12,.2)};
+const sTap=()=>tone(520,.06,'sine',.08);
+
+/* ---------- Grafik ---------- */
+function dogSVG(def,collar){
+  const ears=def.earType==='point'
+    ?`<path d="M14 38 L17 12 L31 27 Z" fill="${def.ear}" stroke="#22324a" stroke-width="2.5" stroke-linejoin="round"/><path d="M50 38 L47 12 L33 27 Z" fill="${def.ear}" stroke="#22324a" stroke-width="2.5" stroke-linejoin="round"/>`
+    :'';
+  const flop=def.earType==='flop'
+    ?`<ellipse cx="14" cy="42" rx="7.5" ry="14" transform="rotate(20 14 42)" fill="${def.ear}" stroke="#22324a" stroke-width="2.5"/><ellipse cx="50" cy="42" rx="7.5" ry="14" transform="rotate(-20 50 42)" fill="${def.ear}" stroke="#22324a" stroke-width="2.5"/>`
+    :'';
+  const spot=def.spot?`<ellipse cx="66" cy="61" rx="10" ry="7" fill="${def.spot}"/>`:'';
+  const col=collar?`<path d="M18 55 Q32 64 46 55" stroke="#22324a" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M18 55 Q32 64 46 55" stroke="${collar}" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="32" cy="62" r="3.5" fill="#ffd54f" stroke="#22324a" stroke-width="1.5"/>`:'';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <ellipse cx="56" cy="92" rx="32" ry="6" fill="rgba(0,0,0,.18)"/>
+    <path class="tail" d="M82 62 q14 -6 13 -22" stroke="#22324a" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path class="tail" d="M82 62 q14 -6 13 -22" stroke="${def.body}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g fill="${def.ear}" stroke="#22324a" stroke-width="2.5">
+      <ellipse cx="40" cy="83" rx="6" ry="8"/><ellipse cx="53" cy="86" rx="6" ry="8"/><ellipse cx="67" cy="86" rx="6" ry="8"/><ellipse cx="79" cy="83" rx="6" ry="8"/>
+    </g>
+    <ellipse cx="59" cy="67" rx="28" ry="19" fill="${def.body}" stroke="#22324a" stroke-width="2.5"/>
+    ${spot}
+    ${ears}
+    <circle cx="32" cy="40" r="19" fill="${def.body}" stroke="#22324a" stroke-width="2.5"/>
+    ${flop}
+    <ellipse cx="31" cy="49" rx="10" ry="7.5" fill="${def.muzzle}" stroke="#22324a" stroke-width="2"/>
+    <ellipse cx="31" cy="45" rx="4.2" ry="3.2" fill="#22324a"/>
+    <path d="M31 48 q-3 4 -6 2 M31 48 q3 4 6 2" stroke="#22324a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="24" cy="36" r="3.4" fill="#22324a"/><circle cx="39" cy="36" r="3.4" fill="#22324a"/>
+    <circle cx="25.2" cy="34.8" r="1.2" fill="#fff"/><circle cx="40.2" cy="34.8" r="1.2" fill="#fff"/>
+    <circle cx="19" cy="45" r="2.6" fill="#ff8fab" opacity=".6"/><circle cx="44" cy="45" r="2.6" fill="#ff8fab" opacity=".6"/>
+    ${col}
+  </svg>`;
+}
+function ownerSVG(o){
+  return `<svg viewBox="0 0 60 110" aria-hidden="true">
+    <ellipse cx="30" cy="106" rx="18" ry="4" fill="rgba(0,0,0,.18)"/>
+    <rect x="17" y="70" width="11" height="34" rx="5" fill="#3d5a80" stroke="#22324a" stroke-width="2.5"/>
+    <rect x="32" y="70" width="11" height="34" rx="5" fill="#3d5a80" stroke="#22324a" stroke-width="2.5"/>
+    <rect x="11" y="36" width="38" height="40" rx="13" fill="${o.shirt}" stroke="#22324a" stroke-width="2.5"/>
+    <circle cx="30" cy="22" r="14" fill="${o.skin}" stroke="#22324a" stroke-width="2.5"/>
+    <path d="M16 21 Q17 6 30 6 Q43 6 44 21 Q38 12 30 13 Q22 12 16 21Z" fill="${o.hair}" stroke="#22324a" stroke-width="2"/>
+    <circle cx="25" cy="23" r="1.9" fill="#22324a"/><circle cx="35" cy="23" r="1.9" fill="#22324a"/>
+    <path d="M25 28 q5 4 10 0" stroke="#22324a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ---------- Moduler ---------- */
+function MOD(id){return MODULES.find(m=>m.id===id)}
+function hasMod(id){const p=P();return !!(p&&p.modules&&p.modules.some(m=>m.id===id))}
+function modOf(id){return P().modules.find(m=>m.id===id)}
+function restSpots(){
+  const s=BEDS.map(b=>({x:b.x,y:b.y}));
+  const a=modOf('altan'); if(a){s.push({x:a.x-38,y:a.y+24,sun:true});s.push({x:a.x+38,y:a.y+24,sun:true})}
+  return s;
+}
+function modSVG(id){
+  const m=MOD(id), w=m.w, h=m.h; let g='';
+  if(id==='tvatt') g=`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="14" fill="#cfeefe" stroke="#22324a" stroke-width="3"/>
+    <path d="M30 5 V${h-5} M60 5 V${h-5} M90 5 V${h-5} M5 30 H${w-5} M5 58 H${w-5}" stroke="#a9dcf5" stroke-width="2"/>
+    <ellipse cx="56" cy="52" rx="40" ry="24" fill="#fff" stroke="#22324a" stroke-width="3"/>
+    <ellipse cx="56" cy="51" rx="30" ry="15" fill="#7fd0ff"/>
+    <g fill="#fff" stroke="#22324a" stroke-width="1.5"><circle cx="40" cy="40" r="6"/><circle cx="52" cy="34" r="4"/><circle cx="72" cy="38" r="5"/></g>
+    <rect x="98" y="12" width="14" height="20" rx="4" fill="#ffcc33" stroke="#22324a" stroke-width="2.5"/>
+    <text x="10" y="21" font-size="14" font-weight="700" fill="#22324a" font-family="Fredoka, sans-serif">Tvätt</text>`;
+  if(id==='altan') g=`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="10" fill="#d9a066" stroke="#22324a" stroke-width="3"/>
+    <path d="M5 22 H${w-5} M5 42 H${w-5} M5 62 H${w-5} M5 82 H${w-5}" stroke="#b77f45" stroke-width="2"/>
+    <rect x="20" y="34" width="34" height="56" rx="8" fill="#fff" stroke="#22324a" stroke-width="2.5"/><rect x="24" y="38" width="26" height="14" rx="5" fill="#ff6f91"/>
+    <rect x="96" y="34" width="34" height="56" rx="8" fill="#fff" stroke="#22324a" stroke-width="2.5"/><rect x="100" y="38" width="26" height="14" rx="5" fill="#4fa3e0"/>
+    <circle cx="75" cy="36" r="26" fill="#ffcc33" stroke="#22324a" stroke-width="3"/>
+    <path d="M75 10 V62 M49 36 H101 M57 18 L93 54 M93 18 L57 54" stroke="#fff" stroke-width="3"/><circle cx="75" cy="36" r="4" fill="#22324a"/>`;
+  if(id==='pool') g=`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="30" fill="#fff" stroke="#22324a" stroke-width="3"/>
+    <rect x="10" y="10" width="${w-20}" height="${h-20}" rx="24" fill="#4fa3e0"/>
+    <path d="M24 36 q8 -6 16 0 t16 0 M50 56 q8 -6 16 0 t16 0" stroke="#bfe6fb" stroke-width="3" fill="none"/>
+    <ellipse cx="84" cy="38" rx="10" ry="7" fill="#ffcc33" stroke="#22324a" stroke-width="2"/><circle cx="90" cy="30" r="5" fill="#ffcc33" stroke="#22324a" stroke-width="2"/><path d="M94 29 l6 1 -6 3z" fill="#ff8a65"/>`;
+  if(id==='agility') g=`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="14" fill="#c8eba8" stroke="#22324a" stroke-width="3"/>
+    <rect x="9" y="9" width="${w-18}" height="${h-18}" rx="10" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="8 6"/>
+    <g stroke="#22324a" stroke-width="2"><rect x="30" y="30" width="5" height="44" fill="#fff"/><rect x="56" y="30" width="5" height="44" fill="#fff"/><rect x="30" y="44" width="31" height="8" fill="#e53935"/>
+    <rect x="76" y="30" width="5" height="44" fill="#fff"/><rect x="102" y="30" width="5" height="44" fill="#fff"/><rect x="76" y="44" width="31" height="8" fill="#4fa3e0"/></g>
+    <path d="M128 76 Q154 22 180 76" stroke="#22324a" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <path d="M128 76 Q154 22 180 76" stroke="#ff6f91" stroke-width="11" fill="none" stroke-linecap="round" stroke-dasharray="10 6"/>
+    <text x="14" y="24" font-size="14" font-weight="700" fill="#22324a" font-family="Fredoka, sans-serif">Agility</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">${g}</svg>`;
+}
+function renderMods(){
+  const p=P(), box=$('#mods'); if(!p){box.innerHTML='';return}
+  box.innerHTML=p.modules.map((m,i)=>{const d=MOD(m.id);return `<div class="mod" data-mi="${i}" style="left:${m.x}px;top:${m.y}px;width:${d.w}px;height:${d.h}px">${modSVG(m.id)}</div>`}).join('');
+}
+
+/* ---------- Skalning ---------- */
+const scene=$('#scene'), stage=$('#stage'), ents=$('#ents');
+function fit(){
+  const sw=stage.clientWidth-16, sh=stage.clientHeight-16;
+  const s=Math.max(.2,Math.min(sw/W,sh/H));
+  scene.style.transform=`scale(${s})`;
+  scene.style.left=((stage.clientWidth-W*s)/2)+'px';
+  scene.style.top=((stage.clientHeight-H*s)/2)+'px';
+}
+window.addEventListener('resize',fit);
+if(window.ResizeObserver) new ResizeObserver(fit).observe(stage);
+
+/* ---------- Speltillstånd ---------- */
+let G={running:false,paused:false,t:0,dogs:[],owners:[],roster:[],selected:null};
+let TR=null, AG=null, PL=null;
+
+function decorCount(){const p=P();return SHOP.filter(i=>i.cat==='pynt'&&p.owned[i.id]).length}
+function boostFor(type){const p=P();return SHOP.some(i=>i.boost===type&&p.owned[i.id])?14:0}
+function applyDecor(){
+  const p=P(); if(!p) return;
+  for(const it of SHOP){const el=document.getElementById('d-'+it.id); if(el) el.style.display=p.owned[it.id]?'':'none';}
+  renderMods();
+}
+function updateHUD(){
+  const p=P(); if(!p) return;
+  $('#money').textContent=p.money; $('#stars').textContent=p.stars;
+  $('#whoAv').textContent=p.avatar; $('#whoName').textContent=p.name;
+  $('#dayLbl').textContent='Dag '+p.day;
+}
+function renderRoster(){
+  $('#roster').innerHTML=G.roster.map(r=>`<span class="rs ${r.status}" title="${esc(r.def.name)}">${r.status==='gone'?'✓':'🐕'}</span>`).join('');
+}
+function float(x,y,text){
+  const e=document.createElement('div'); e.className='float'; e.textContent=text;
+  e.style.left=x+'px'; e.style.top=y+'px'; ents.appendChild(e);
+  setTimeout(()=>e.remove(),1500);
+}
+function addMoney(n,x,y){
+  const p=P(); p.money+=n; G.earned+=n; updateHUD(); float(x,y,`+${n} kr`); sCoin(); persist();
+}
+function setHint(text){
+  const h=$('#hint');
+  if(!text){h.classList.add('hidden');return}
+  h.textContent=text; h.classList.remove('hidden');
+  h.style.animation='none'; void h.offsetWidth; h.style.animation='';
+}
+
+/* ---------- Dagens upplägg ---------- */
+function dogsToday(day){return Math.min(5,day+2)}
+function newDogDef(usedNames){
+  const options=NEW_NAMES.filter(n=>!usedNames.includes(n[0]));
+  const [name,pron]=pick(options.length?options:NEW_NAMES);
+  const look=pick(NEW_LOOKS);
+  return {id:'ny-'+name,name,pron,...look,earType:Math.random()<.5?'flop':'point',
+    spot:Math.random()<.3?'#ffffff':null,size:rand(.85,1.1),regular:false,
+    about:'',w:{mat:2,vatten:2,lek:2,vila:2,trana:1}};
+}
+function clearScene(){ents.innerHTML='';deselect();setHint('')}
+function startDay(){
+  const p=P(); clearScene();
+  const n=dogsToday(p.day), nNew=p.day>=2?1:0;
+  G={running:true,paused:false,t:0,dogs:[],owners:[],roster:[],selected:null,earned:0,starsEarned:0,learned:[],
+     hint:p.day===1?1:0,hintT:0,ended:false};
+  const defs=shuffle(REGULARS.slice()).slice(0,n-nNew).map(r=>({...r,regular:true}));
+  for(let i=0;i<nNew;i++) defs.push(newDogDef(defs.map(d=>d.name)));
+  shuffle(defs);
+  const times=[1,14,30,48,66];
+  G.roster=defs.map((def,i)=>({def,at:times[i],status:'wait',
+    look:{shirt:pick(OWNER_SHIRTS),skin:pick(OWNER_SKIN),hair:pick(OWNER_HAIR)}}));
+  updateHUD(); renderRoster(); applyDecor();
+}
+
+/* ---------- Ägare ---------- */
+function makeOwner(kind,text,r){
+  const o={kind,t:0,x:OWNER.x,y:OWNER.y,r,el:document.createElement('div'),waiting:kind==='pick',spawned:false,fading:false};
+  o.el.className='owner';
+  o.el.innerHTML=`<div class="osprite">${ownerSVG(r.look)}</div><div class="say">${esc(text)}</div>`;
+  o.el.style.transform=`translate(${o.x}px,${o.y}px)`; o.el.style.zIndex=20+Math.round(o.y);
+  ents.appendChild(o.el); G.owners.push(o); return o;
+}
+function sayOwner(o,text){const s=o.el.querySelector('.say');s.textContent=text;s.style.animation='none';void s.offsetWidth;s.style.animation=''}
+function updateOwners(dt){
+  for(const o of G.owners.slice()){
+    o.t+=dt;
+    if(o.kind==='drop'){
+      if(!o.spawned&&o.t>.8){o.spawned=true;spawnDog(o.r)}
+      if(o.t>3.6&&!o.fading){o.fading=true;o.el.classList.add('bye')}
+      if(o.t>4.3){o.el.remove();G.owners.splice(G.owners.indexOf(o),1)}
+    }else if(!o.waiting){
+      if(o.t>2.6&&!o.fading){o.fading=true;o.el.classList.add('bye')}
+      if(o.t>3.3){o.el.remove();G.owners.splice(G.owners.indexOf(o),1)}
+    }
+  }
+}
+function dropOff(r){
+  const text=r.def.regular?`Hej! Här kommer ${r.def.name}. ${r.def.about}`
+    :`Hej! Det här är ${r.def.name}. ${r.def.pron==='henne'?'Hon':'Han'} är här för första gången!`;
+  makeOwner('drop',text,r);
+}
+
+/* ---------- Hundar ---------- */
+function spawnDog(r){
+  const def=r.def, p=P();
+  const d={def,r,x:OWNER.x-14,y:OWNER.y-4,path:[],onArrive:null,state:'arrive',joy:70,need:null,needIn:rand(3,6),
+    wanderIn:0,stay:rand(85,105),busyT:0,act:null,face:-1,bed:null,
+    tricks:def.regular?null:[],collar:def.regular?p.dogs[def.id].collar:null,lastNeed:null};
+  const el=document.createElement('div'); el.className='dog';
+  el.innerHTML=`<div class="ring"></div><div class="sprite" style="transform:scale(${def.size})"><div class="flipper">${dogSVG(def,d.collar)}</div></div>
+    <span class="toy">🎾</span><span class="zz">z z</span><span class="soap">🫧</span><div class="mud"></div>
+    <div class="bubble hidden" style="top:${Math.round(-78*def.size-60)}px"></div>
+    <div class="tag"><span>${esc(def.name)}</span><i><b></b></i></div><div class="hit"></div>`;
+  el.addEventListener('click',e=>{e.stopPropagation(); if(!G.paused) select(d)});
+  d.el=el; d.flipper=el.querySelector('.flipper'); d.bubble=el.querySelector('.bubble'); d.bar=el.querySelector('.tag b');
+  ents.appendChild(el); G.dogs.push(d);
+  d.path=[{x:GATE.x,y:GATE.y},randIn(YARD)];
+  d.onArrive=()=>{d.state='idle';d.wanderIn=rand(2,4)};
+  renderDog(d); sWoof();
+  if(G.hint===1) setHint('Tryck på en hund för att ta hand om den!');
+}
+function knownTricks(d){return d.def.regular?P().dogs[d.def.id].tricks:d.tricks}
+function route(d,target){
+  const a=region(d), b=region(target);
+  if(a===b) return [target];
+  return a==='house'?[DOOR_IN,DOOR_OUT,target]:[DOOR_OUT,DOOR_IN,target];
+}
+function newNeed(d){
+  const w={...d.def.w};
+  if(hasMod('agility')) w.agility=Math.max(1,d.def.w.lek);
+  if(knownTricks(d).length>=TRICKS.length) delete w.trana;
+  if(d.lastNeed&&Object.keys(w).length>1) delete w[d.lastNeed];
+  let type=wpick(w);
+  if(d.forceNeed){type=d.forceNeed;d.forceNeed=null}
+  d.need={type,age:0}; d.lastNeed=type;
+  d.bubble.textContent=NEEDS[type].icon; d.bubble.classList.remove('hidden','urgent');
+  d.bubble.style.animation='none'; void d.bubble.offsetWidth; d.bubble.style.animation='';
+}
+function hideBubble(d){d.bubble.classList.add('hidden')}
+function fulfill(d,type,extra=0){
+  const asked=d.need&&d.need.type===type;
+  d.joy=Math.min(100,d.joy+(asked?28:8)+extra);
+  if(asked){
+    d.need=null; hideBubble(d); d.needIn=rand(9,14);
+    float(d.x,d.y-125,'❤️'); addMoney(2,d.x+30,d.y-100); sHappy();
+    if(G.hint===2){G.hint=3;G.hintT=0;setHint('Bra jobbat! Glada hundar ger mer pengar när de hämtas.')}
+  }else{
+    float(d.x,d.y-115,'🙂');
+  }
+}
+function startAction(d,type){
+  if(type==='trana'){openTraining(d);return}
+  if(type==='halsband'){openCollar(d);return}
+  if(type==='agility'){openAgility(d);return}
+  openMini(d,type);
+}
+function goDo(d,type,score){
+  if(!G.dogs.includes(d)||d.state!=='idle') return;
+  d.miniBonus=Math.round(score*10);
+  let target; d.atPool=false; d.sun=false;
+  if(type==='mat') target={x:FOOD.x+rand(-12,12),y:FOOD.y+rand(-4,8)};
+  else if(type==='vatten') target={x:WATER.x+rand(-12,12),y:WATER.y+rand(-4,8)};
+  else if(type==='lek'){
+    const pool=modOf('pool');
+    if(pool&&Math.random()<.5){d.atPool=true;target={x:pool.x+rand(-30,30),y:pool.y+rand(-4,16)}}
+    else target=randIn({x1:640,x2:880,y1:120,y2:560});
+  }
+  else if(type==='tvatt'){const m=modOf('tvatt');target={x:m.x+rand(-8,8),y:m.y+12}}
+  else if(type==='vila'){
+    const spots=restSpots();
+    const used=G.dogs.filter(o=>o!==d&&o.bed!==null).map(o=>o.bed);
+    const free=shuffle(spots.map((s,i)=>i).filter(i=>!used.includes(i)));
+    const i=free.length?free[0]:Math.floor(Math.random()*spots.length);
+    d.bed=i; d.sun=!!spots[i].sun; target={x:spots[i].x+rand(-6,6),y:spots[i].y};
+  }
+  d.state='go'; d.path=route(d,target);
+  d.onArrive=()=>{
+    d.state='act'; d.act=type; d.el.classList.add('act-'+type);
+    d.busyT=type==='lek'?3.6:type==='vila'?4.6:type==='tvatt'?3.4:2.8;
+  };
+  deselect();
+}
+function finishAction(d){
+  const type=d.act; d.el.classList.remove('act-'+type); d.act=null; d.bed=null;
+  d.state='idle'; d.wanderIn=rand(1.5,3.5);
+  const extra=boostFor(type)+(d.atPool||d.sun?8:0)+(d.miniBonus||0); d.atPool=false; d.sun=false; d.miniBonus=0;
+  if(type==='tvatt'){d.dirty=false;d.el.classList.remove('dirty')}
+  fulfill(d,type,extra);
+  if(type==='lek'&&hasMod('tvatt')&&!d.dirty&&Math.random()<.45){
+    d.dirty=true; d.el.classList.add('dirty');
+    if(d.need){hideBubble(d);d.need=null}
+    d.forceNeed='tvatt'; d.needIn=1.5;
+  }
+}
+function callOwner(d){
+  d.state='leave'; d.need=null; hideBubble(d);
+  if(G.selected===d) deselect();
+  const o=makeOwner('pick',`Hej ${d.def.name}! Dags att gå hem!`,d.r);
+  d.path=route(d,GATE).concat([{x:OWNER.x-16,y:OWNER.y-4}]);
+  d.onArrive=()=>pay(d,o);
+}
+function pay(d,o){
+  const p=P();
+  const tip=Math.round(d.joy/10)+decorCount();
+  const kr=15+tip, st=d.joy>=75?3:d.joy>=45?2:1;
+  p.money+=kr; p.stars+=st; G.earned+=kr; G.starsEarned+=st;
+  if(d.def.regular) p.dogs[d.def.id].visits++;
+  persist(); updateHUD();
+  sayOwner(o,st===3?`Wow, så glad ${d.def.name} är! Tack! Här är ${kr} kr.`:`Tack för i dag! Här är ${kr} kr.`);
+  float(o.x-40,o.y-150,`+${kr} kr`); setTimeout(()=>float(o.x-40,o.y-120,'⭐'.repeat(st)),300);
+  sCoin();
+  o.waiting=false; o.t=0;
+  d.el.classList.add('bye'); setTimeout(()=>d.el.remove(),650);
+  G.dogs.splice(G.dogs.indexOf(d),1);
+  d.r.status='gone'; renderRoster();
+}
+function updateDog(d,dt){
+  if(d.path.length){
+    const tgt=d.path[0], dx=tgt.x-d.x, dy=tgt.y-d.y, dist=Math.hypot(dx,dy);
+    const step=(d.def.size>1.1?125:150)*dt;
+    if(Math.abs(dx)>2) d.face=dx>0?1:-1;
+    if(dist<=step){
+      d.x=tgt.x; d.y=tgt.y; d.path.shift();
+      if(!d.path.length&&d.onArrive){const f=d.onArrive;d.onArrive=null;f()}
+    }else{d.x+=dx/dist*step; d.y+=dy/dist*step}
+  }
+  if(!G.dogs.includes(d)) return;
+  if(d.state==='act'){d.busyT-=dt; if(d.busyT<=0) finishAction(d)}
+  if(d.state!=='leave'&&d.state!=='arrive'){
+    if(!d.need){d.needIn-=dt; if(d.needIn<=0&&d.state==='idle') newNeed(d)}
+    else d.need.age+=dt;
+  }
+  const decay=d.need&&d.need.age>6?.45:.12;
+  if(d.state!=='leave') d.joy=Math.max(0,d.joy-decay*dt);
+  if(d.state==='idle'&&!d.path.length){
+    d.wanderIn-=dt;
+    if(d.wanderIn<=0){d.path=route(d,randIn(region(d)==='house'?HOUSE:YARD));d.wanderIn=rand(3,7)}
+  }
+  if(d.state!=='arrive'&&d.state!=='leave') d.stay-=dt;
+  if(d.stay<=0&&d.state==='idle') callOwner(d);
+  renderDog(d);
+}
+function renderDog(d){
+  const e=d.el;
+  e.style.transform=`translate(${d.x}px,${d.y}px)`;
+  e.style.zIndex=20+Math.round(d.y);
+  e.classList.toggle('walking',d.path.length>0&&d.state!=='act');
+  d.flipper.classList.toggle('flip',d.face>0);
+  d.bar.style.width=Math.round(d.joy)+'%';
+  if(d.need) d.bubble.classList.toggle('urgent',d.need.age>8);
+}
+
+/* ---------- Val och knappar ---------- */
+const bar=$('#actionbar');
+function select(d){
+  if(!d||d.state==='leave'||d.state==='arrive'||!G.running) return;
+  if(G.selected) G.selected.el.classList.remove('sel');
+  G.selected=d; d.el.classList.add('sel'); sTap();
+  $('#abAv').innerHTML=dogSVG(d.def,d.collar);
+  $('#abName').textContent=d.def.name;
+  $('#abCollar').classList.toggle('hidden',!P().collars.length);
+  $('#abWash').classList.toggle('hidden',!hasMod('tvatt'));
+  $('#abAgi').classList.toggle('hidden',!hasMod('agility'));
+  bar.classList.remove('hidden'); refreshBar();
+  if(G.hint===1){G.hint=2;setHint('Titta i tankebubblan. Tryck på samma bild här nere!')}
+}
+function deselect(){
+  if(G.selected) G.selected.el.classList.remove('sel');
+  G.selected=null; bar.classList.add('hidden');
+}
+function refreshBar(){
+  const d=G.selected; if(!d) return;
+  $('#abJoy').style.width=Math.round(d.joy)+'%';
+  const busy=d.state!=='idle';
+  bar.querySelectorAll('[data-act]').forEach(b=>b.disabled=busy);
+  $('#abMsg').textContent=busy?`${d.def.name} är upptagen just nu.`
+    :d.need?`${d.def.name} vill ${NEEDS[d.need.type].label}.`:(d.dirty?`${d.def.name} är smutsig.`:`${d.def.name} mår bra!`);
+}
+bar.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',e=>{
+  e.stopPropagation(); const d=G.selected; if(!d||d.state!=='idle'||G.paused) return;
+  sTap(); startAction(d,b.dataset.act);
+}));
+bar.addEventListener('click',e=>e.stopPropagation());
+$('#abClose').onclick=e=>{e.stopPropagation();deselect()};
+scene.addEventListener('click',e=>{if(PL){placeClick(e);return} if(!G.paused) deselect()});
+
+/* ---------- Spelloop ---------- */
+let last=performance.now(), barT=0;
+function update(dt){
+  G.t+=dt;
+  for(const r of G.roster){if(r.status==='wait'&&G.t>=r.at){r.status='here';dropOff(r);renderRoster()}}
+  updateOwners(dt);
+  for(const d of G.dogs.slice()) updateDog(d,dt);
+  barT+=dt; if(barT>.2){barT=0;refreshBar()}
+  if(G.hint===3){G.hintT+=dt;if(G.hintT>6){G.hint=0;setHint('')}}
+  if(!G.ended&&G.roster.length&&G.roster.every(r=>r.status==='gone')&&!G.owners.length){G.ended=true;endDay()}
+}
+function tick(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(G.running&&!G.paused) update(dt);
+  requestAnimationFrame(tick);
+}
+
+/* ---------- Modaler ---------- */
+let modalOpt=null;
+const modal=$('#modal');
+function showModal(html,opt={}){
+  modal.innerHTML=`<div class="card ${opt.cls||''}" role="dialog" aria-modal="true">${html}</div>`;
+  modal.classList.remove('hidden'); modalOpt=opt; G.paused=true;
+  modal.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
+  return modal.firstElementChild;
+}
+function closeModal(){
+  modal.classList.add('hidden'); modal.innerHTML='';
+  const o=modalOpt; modalOpt=null; TR=null; AG=null;
+  G.paused=false;
+  if(o&&o.onClose) o.onClose();
+}
+modal.addEventListener('click',e=>{if(e.target===modal&&modalOpt&&!modalOpt.lock) closeModal()});
+
+function profileScreen(){
+  G.running=false; clearScene(); G.roster=[]; renderRoster();
+  const list=Object.values(save.profiles);
+  let av=AVATARS[0];
+  const c=showModal(`
+    <div class="title"><div class="logo">${dogSVG(REGULARS[2],'#ff6f91')}</div>
+      <div><h1>Hunddagiset</h1><p>Ta hand om hundarna, lär dem trix och gör ditt dagis finare.</p></div></div>
+    ${list.length?`<h3>Vem spelar?</h3><div class="plist">${list.map(p=>`<button class="pbtn" data-pid="${p.id}"><span class="pav">${p.avatar}</span><span><b>${esc(p.name)}</b><small>Dag ${p.day}, ${p.money} kr, ${p.stars} ⭐</small></span></button>`).join('')}</div>`:''}
+    <h3>${list.length?'Ny spelare':'Vad heter du?'}</h3>
+    <div class="newp">
+      <input id="pname" maxlength="14" placeholder="Skriv ditt namn" autocomplete="off">
+      <div class="avs">${AVATARS.map((a,i)=>`<button class="av ${i===0?'on':''}" data-av="${a}" aria-label="Välj ${a}">${a}</button>`).join('')}</div>
+      <div class="row" style="margin-top:4px"><button class="btn" id="mkp">Börja spela</button></div>
+    </div>`,{lock:true});
+  c.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{save.current=b.dataset.pid;ensureDogs(P());persist();closeModal();dayIntro()});
+  c.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{av=b.dataset.av;c.querySelectorAll('.av').forEach(x=>x.classList.toggle('on',x===b))});
+  c.querySelector('#mkp').onclick=()=>{
+    const inp=c.querySelector('#pname'); const name=inp.value.trim();
+    if(!name){inp.focus();inp.placeholder='Skriv ditt namn först';return}
+    const id='p'+Date.now();
+    save.profiles[id]={id,name,avatar:av,money:20,stars:0,day:1};
+    save.current=id; ensureDogs(save.profiles[id]); persist(); closeModal(); dayIntro();
+  };
+}
+function dayIntro(){
+  const p=P(); updateHUD(); applyDecor();
+  const tips=p.day===1?`<div class="tips">
+    <div class="tip"><span>👆</span>Tryck på en hund.</div>
+    <div class="tip"><span>💭</span>Titta i tankebubblan vad hunden behöver.</div>
+    <div class="tip"><span>🍖</span>Tryck på samma bild nere på skärmen. Då startar ett litet spel.</div>
+    <div class="tip"><span>🎯</span>En måltavla betyder att hunden vill lära sig ett trix.</div>
+    <div class="tip"><span>💰</span>Glada hundar ger mer pengar när ägaren hämtar dem.</div>
+    <div class="tip"><span>⭐</span>Glada hundar ger också stjärnor. För stjärnorna bygger du ut dagiset.</div></div>`
+    :`<p>Du har ${p.money} kr att handla för och ${p.stars} ⭐ att bygga för.</p>`;
+  const c=showModal(`<h2>Dag ${p.day}</h2><p>I dag kommer <b>${dogsToday(p.day)} hundar</b> till ditt dagis.</p>${tips}
+    <div class="row"><button class="btn ghost" id="iBuild">🔨 Bygg</button><button class="btn ghost" id="iShop">🛒 Butiken</button><button class="btn" id="iGo">Öppna dagiset 🐾</button></div>`,{lock:true});
+  c.querySelector('#iShop').onclick=()=>{closeModal();openShop('nytta',dayIntro)};
+  c.querySelector('#iBuild').onclick=()=>{closeModal();openBuild(dayIntro)};
+  c.querySelector('#iGo').onclick=()=>{closeModal();startDay()};
+}
+function endDay(){
+  G.running=false; deselect(); setHint('');
+  const p=P(); p.day++; persist(); updateHUD();
+  const learned=G.learned.length?`<h3>Nya trix i dag</h3><div class="tips">${G.learned.map(t=>`<div class="tip"><span>⭐</span>${esc(t)}</div>`).join('')}</div>`:'';
+  const c=showModal(`<h2>Dagen är slut 🌙</h2><p>Alla hundar har gått hem med sina ägare.</p>
+    <div class="stats"><div><b>${G.earned}</b>kr i dag</div><div><b>${G.starsEarned}</b>⭐ i dag</div></div>${learned}
+    <div class="row"><button class="btn" id="eNext">Nästa dag</button></div>`,{lock:true});
+  c.querySelector('#eNext').onclick=()=>{closeModal();dayIntro()};
+}
+
+function openShop(tab='nytta',after){
+  const p=P();
+  const cats={nytta:'Nytta',pynt:'Pynt',halsband:'Halsband'};
+  const items=SHOP.filter(i=>i.cat===tab);
+  const c=showModal(`<h2>Butiken</h2><p>Du har <b>${p.money} kr</b>.</p>
+    <div class="tabs">${Object.entries(cats).map(([k,v])=>`<button data-tab="${k}" class="${k===tab?'on':''}">${v}</button>`).join('')}</div>
+    <div class="items">${items.map(i=>{
+      const own=i.cat==='halsband'?p.collars.includes(i.color):!!p.owned[i.id];
+      return `<div class="item ${own?'own':''}">${i.color?`<div class="sw" style="background:${i.color}"></div>`:`<div class="ic">${i.icon}</div>`}
+        <b>${i.name}</b><small>${i.desc}</small>
+        <button data-buy="${i.id}" ${own||p.money<i.price?'disabled':''}>${own?'Köpt ✓':'Köp för '+i.price+' kr'}</button></div>`}).join('')}</div>
+    <div class="row"><button class="btn" data-close>Klar</button></div>`,{onClose:after});
+  c.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{openShop(b.dataset.tab,after)});
+  c.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{
+    const it=SHOP.find(x=>x.id===b.dataset.buy); if(p.money<it.price) return;
+    p.money-=it.price;
+    if(it.cat==='halsband') p.collars.push(it.color); else p.owned[it.id]=true;
+    persist(); updateHUD(); applyDecor(); sHappy();
+    openShop(tab,after);
+  });
+}
+
+function openGallery(){
+  const p=P();
+  showModal(`<h2>Stamkunderna</h2><p>Hundarna som kommer tillbaka och minns sina trix.</p>
+    <div class="gal">${REGULARS.map(r=>{const s=p.dogs[r.id];return `<div class="gdog"><div class="gs">${dogSVG(r,s.collar)}</div>
+      <div><b>${r.name}</b><p>${r.about}</p><p>Besök: ${s.visits}</p>
+      <div class="chips">${TRICKS.map(t=>`<span class="${s.tricks.includes(t.id)?'k':''}">${s.tricks.includes(t.id)?t.name:'?'}</span>`).join('')}</div></div></div>`}).join('')}</div>
+    <div class="row"><button class="btn" data-close>Stäng</button></div>`);
+}
+
+function openCollar(d){
+  deselect();
+  const p=P();
+  const c=showModal(`<h2>Halsband till ${esc(d.def.name)}</h2><p>Välj ett halsband.</p>
+    <div class="cols"><button class="col none" data-col="">Inget</button>${p.collars.map(col=>`<button class="col" data-col="${col}" style="background:${col}" aria-label="Halsband"></button>`).join('')}</div>
+    <div class="row"><button class="btn ghost" data-close>Stäng</button></div>`);
+  c.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{
+    d.collar=b.dataset.col||null;
+    if(d.def.regular){p.dogs[d.def.id].collar=d.collar;persist()}
+    d.flipper.innerHTML=dogSVG(d.def,d.collar); sHappy(); closeModal();
+  });
+}
+
+function openMenu(){
+  const c=showModal(`<h2>Paus</h2><p>Spelet står still tills du fortsätter.</p>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn ghost" id="mSound">${save.sound?'🔊 Ljud på':'🔇 Ljud av'}</button>
+      <button class="btn ghost" id="mWho">Byt spelare</button>
+      <button class="btn" data-close>Fortsätt</button></div>
+    ${G.running?'<p style="font-size:15px;opacity:.75">Byter du spelare nu börjar dagen om. Pengar du redan fått sparas.</p>':''}`);
+  c.querySelector('#mSound').onclick=e=>{save.sound=!save.sound;persist();e.currentTarget.textContent=save.sound?'🔊 Ljud på':'🔇 Ljud av'};
+  c.querySelector('#mWho').onclick=()=>{closeModal();profileScreen()};
+}
+const hudFree=()=>!modalOpt&&!PL&&P();
+$('#bBuild').onclick=()=>{if(hudFree()){deselect();openBuild()}};
+$('#bShop').onclick=()=>{if(hudFree()){deselect();openShop('nytta')}};
+$('#bDogs').onclick=()=>{if(hudFree()){deselect();openGallery()}};
+$('#bMenu').onclick=()=>{if(hudFree()){deselect();openMenu()}};
+$('#who').onclick=()=>{if(hudFree()){deselect();openMenu()}};
+
+/* ---------- Träning (minispel) ---------- */
+function openTraining(d){
+  deselect();
+  const known=knownTricks(d), t=TRICKS.find(x=>!known.includes(x.id));
+  if(!t){
+    showModal(`<div class="train"><h2>${esc(d.def.name)} kan alla trix!</h2>
+      <div class="bigdog trick-snurra">${dogSVG(d.def,d.collar)}</div>
+      <p>${esc(d.def.name)} visar stolt upp allt ${d.def.pron==='henne'?'hon':'han'} kan.</p>
+      <div class="row" style="justify-content:center"><button class="btn" data-close>Toppen!</button></div></div>`);
+    fulfill(d,'trana',10); return;
+  }
+  const c=showModal(`<div class="train">
+    <h2>Träna ${esc(d.def.name)}</h2><p>Nytt trix: <b>${t.name}</b></p>
+    <div class="bigdog" id="tDog">${dogSVG(d.def,d.collar)}</div>
+    <div class="status" id="tStatus">Titta noga…</div>
+    <div class="dots" id="tDots">${Array.from({length:t.len},()=>'<i></i>').join('')}</div>
+    <div class="pads" id="tPads">${PADS.map((p,i)=>`<button class="pad" data-pad="${i}" style="background:${p.c}" disabled aria-label="Knapp ${i+1}">${p.i}</button>`).join('')}</div>
+    <div class="row" style="justify-content:center" id="tRow"><button class="btn ghost" data-close>Avbryt</button></div></div>`);
+  TR={d,t,seq:Array.from({length:t.len},()=>Math.floor(Math.random()*4)),pos:0,phase:'show',token:{}};
+  c.querySelectorAll('[data-pad]').forEach(b=>b.onclick=()=>padPress(+b.dataset.pad));
+  const tk=TR.token; setTimeout(()=>{if(TR&&TR.token===tk) playSeq()},700);
+}
+function lightPad(i){
+  const b=modal.querySelector(`[data-pad="${i}"]`); if(!b) return;
+  b.classList.add('lit'); tone(PADS[i].f,.32,'triangle',.14);
+  setTimeout(()=>b.classList.remove('lit'),380);
+}
+function setPads(on){modal.querySelectorAll('[data-pad]').forEach(b=>b.disabled=!on)}
+function setDots(n){modal.querySelectorAll('#tDots i').forEach((x,i)=>x.classList.toggle('f',i<n))}
+function playSeq(){
+  if(!TR) return;
+  const tk={}; TR.token=tk; TR.phase='show'; TR.pos=0; setDots(0); setPads(false);
+  $('#tStatus').textContent='Titta noga…';
+  TR.seq.forEach((p,i)=>setTimeout(()=>{if(TR&&TR.token===tk) lightPad(p)},i*750));
+  setTimeout(()=>{if(TR&&TR.token===tk){TR.phase='input';setPads(true);$('#tStatus').textContent='Din tur! Tryck i samma ordning.'}},TR.seq.length*750+250);
+}
+function padPress(i){
+  if(!TR||TR.phase!=='input') return;
+  lightPad(i);
+  if(TR.seq[TR.pos]===i){
+    TR.pos++; setDots(TR.pos);
+    if(TR.pos===TR.seq.length) trainSuccess();
+  }else{
+    TR.phase='wait'; setPads(false);
+    $('#tStatus').textContent='Oj, nästan! Titta en gång till.';
+    tone(200,.25,'sine',.1);
+    const tk=TR.token; setTimeout(()=>{if(TR&&TR.token===tk) playSeq()},1200);
+  }
+}
+function trainSuccess(){
+  const {d,t}=TR; TR.phase='done'; setPads(false);
+  const p=P(), known=knownTricks(d);
+  if(!known.includes(t.id)) known.push(t.id);
+  const kr=t.pay+(p.owned.godis?5:0);
+  G.learned.push(`${d.def.name} lärde sig ${t.name.toLowerCase()}`);
+  $('#tDog').classList.add('trick-'+t.id);
+  $('#tStatus').textContent=`Hurra! ${d.def.name} kan nu ${t.name.toLowerCase()}! Du får ${kr} kr.`;
+  $('#tRow').innerHTML='<button class="btn" id="tDone">Klar!</button>';
+  $('#tDone').onclick=closeModal;
+  fulfill(d,'trana',14); addMoney(kr,d.x,d.y-140);
+  setTimeout(sHappy,250);
+}
+
+/* ---------- Minispel för aktiviteter ---------- */
+const INGR=[{i:'🥩',n:'Kött'},{i:'🥕',n:'Morot'},{i:'🍚',n:'Ris'},{i:'🐟',n:'Fisk'},{i:'🥚',n:'Ägg'},{i:'🥦',n:'Broccoli'}];
+let MG=null;
+function mgLive(me){return MG===me&&!me.done}
+function mgHelp(t){const e=$('#mgHelp');if(e)e.textContent=t}
+function mgStatus(t){const e=$('#mgS');if(e)e.textContent=t}
+function mgDots(n){modal.querySelectorAll('.mgdots i').forEach((x,k)=>x.classList.toggle('f',k<n))}
+function openMini(d,type){
+  deselect();
+  const titles={mat:`Laga mat till ${d.def.name}`,vatten:`Häll upp vatten till ${d.def.name}`,tvatt:`Tvätta ${d.def.name}`,lek:`Lek med ${d.def.name}`,vila:`Natta ${d.def.name}`};
+  MG={d,type,done:false,score:1,miss:0};
+  const c=showModal(`<div class="train"><h2>${esc(titles[type])}</h2><p class="mg-help" id="mgHelp"></p>
+    <div class="mg-area" id="mgA"></div><div class="status" id="mgS"></div>
+    <div class="row" style="justify-content:center" id="mgRow"><button class="btn ghost" data-close>Avbryt</button></div></div>`,
+    {onClose:()=>{const m=MG;MG=null;if(m&&m.done) goDo(m.d,m.type,m.score)}});
+  ({mat:miniMat,vatten:miniVatten,tvatt:miniTvatt,lek:miniLek,vila:miniVila})[type](c.querySelector('#mgA'),d,MG);
+}
+function mgWin(me,score,text,btn='Klar!'){
+  if(!mgLive(me)) return; me.done=true; me.score=score;
+  mgStatus(text);
+  $('#mgRow').innerHTML=`<button class="btn" id="mgOk">${esc(btn)}</button>`; $('#mgOk').onclick=closeModal; sHappy();
+}
+
+/* Mat: lägg i rätt ingredienser och rör om */
+function miniMat(a,d,me){
+  const recipe=shuffle(INGR.slice()).slice(0,3).map(x=>x.i), added=[];
+  a.innerHTML=`<div class="recipe">Recept: ${recipe.map(r=>`<span data-r="${r}">${r}</span>`).join('')}</div>
+    <div class="bowlwrap"><div class="bowl" id="mBowl"><div class="mix" id="mMix"></div></div></div>
+    <div class="shelf" id="mShelf">${shuffle(INGR.slice()).map(x=>`<button class="ing" data-i="${x.i}" aria-label="${x.n}">${x.i}</button>`).join('')}</div>`;
+  mgHelp('Lägg i det som står på receptet.');
+  a.querySelectorAll('.ing').forEach(b=>b.onclick=()=>{
+    if(!mgLive(me)) return; const i=b.dataset.i;
+    if(recipe.includes(i)&&!added.includes(i)){
+      added.push(i); b.disabled=true; a.querySelector(`[data-r="${i}"]`).classList.add('ok');
+      $('#mMix').insertAdjacentHTML('beforeend',`<span>${i}</span>`); tone(520+added.length*120,.12,'triangle',.1); mgStatus('');
+      if(added.length===recipe.length) stir();
+    }else{
+      me.miss++; b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); tone(200,.15,'sine',.08);
+      mgStatus(added.includes(i)?'Den har du redan lagt i!':'Det står inte på receptet. Titta igen!');
+    }
+  });
+  function stir(){
+    const N=5; let n=0;
+    $('#mShelf').outerHTML=`<div><div class="dots mgdots">${'<i></i>'.repeat(N)}</div><button class="btn big" id="mStir">🥄 Rör om</button></div>`;
+    mgHelp('Bra! Rör om i skålen. Tryck på skeden.');
+    $('#mStir').onclick=()=>{
+      if(!mgLive(me)) return; n++; mgDots(n);
+      const bowl=$('#mBowl'); bowl.classList.remove('stir'); void bowl.offsetWidth; bowl.classList.add('stir');
+      tone(400+n*60,.08,'sine',.08);
+      if(n>=N){bowl.classList.add('done');$('#mStir').disabled=true;mgWin(me,Math.max(.4,1-.2*me.miss),'Mmm, maten är klar!',`Ge maten till ${d.def.name}`)}
+    };
+  }
+}
+
+/* Vatten: håll inne och släpp i det gröna fältet */
+function miniVatten(a,d,me){
+  const low=rand(50,66), high=low+15; let lvl=0, pouring=false, last=0, tries=0, spill=false;
+  a.innerHTML=`<div class="glasswrap"><div class="jug" id="vJug">🫗</div><div class="wbowl" id="vB"><div class="wband" style="bottom:${low}%;height:${high-low}%"></div><div class="wfill" id="vF"></div></div></div>
+    <div class="row" style="justify-content:center"><button class="btn big pour" id="vP">💧 Håll inne och häll</button></div>`;
+  mgHelp('Fyll skålen till det gröna fältet. Släpp knappen i tid!');
+  const btn=a.querySelector('#vP');
+  const start=e=>{e.preventDefault(); if(!mgLive(me)||spill||pouring) return; pouring=true; last=performance.now(); $('#vJug').classList.add('on'); requestAnimationFrame(loop)};
+  const stop=()=>{if(!pouring) return; pouring=false; const j=$('#vJug'); if(j) j.classList.remove('on'); check()};
+  btn.addEventListener('pointerdown',start); btn.addEventListener('pointerup',stop);
+  btn.addEventListener('pointerleave',stop); btn.addEventListener('pointercancel',stop);
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
+  function loop(now){
+    if(!pouring||!mgLive(me)) return;
+    const dt=Math.min(.05,(now-last)/1000); last=now; lvl+=24*dt;
+    $('#vF').style.height=Math.min(100,lvl)+'%';
+    if(lvl>=100){stop();return}
+    requestAnimationFrame(loop);
+  }
+  function check(){
+    if(!mgLive(me)) return;
+    if(lvl>=low&&lvl<=high) mgWin(me,Math.max(.4,1-.2*tries),'Perfekt! Precis lagom med vatten.',`Ge vattnet till ${d.def.name}`);
+    else if(lvl<low) mgStatus('Lite till! Håll inne igen.');
+    else{
+      tries++; spill=true; mgStatus('Oj, det rann över! Vi häller ut och provar igen.');
+      $('#vB').classList.add('spill'); tone(200,.2,'sine',.08);
+      setTimeout(()=>{if(!mgLive(me)) return; lvl=0; $('#vF').style.height='0%'; $('#vB').classList.remove('spill'); spill=false; mgStatus('Prova igen!')},1200);
+    }
+  }
+}
+
+/* Tvätt: skrubba bort fläckarna och skölj */
+function miniTvatt(a,d,me){
+  const P0=[[32,40],[58,52],[74,62],[46,72],[64,40],[36,60]];
+  const pts=d.dirty?P0:P0.slice(0,3);
+  a.innerHTML=`<div class="scrub" id="tS"><div class="scdog">${dogSVG(d.def,d.collar)}</div>${pts.map((p,i)=>`<div class="spot" data-s="${i}" style="left:${p[0]}%;top:${p[1]}%"></div>`).join('')}</div>`;
+  mgHelp(d.dirty?'Skrubba bort all lera! Gnugga eller tryck på fläckarna.':'Skrubba pälsen fin! Gnugga eller tryck på fläckarna.');
+  const hp=pts.map(()=>3); let left=pts.length, down=false, moves=0;
+  const area=a.querySelector('#tS');
+  function hit(el){
+    if(!mgLive(me)||!el||!el.classList||!el.classList.contains('spot')||el.classList.contains('clean')) return;
+    const i=+el.dataset.s; hp[i]--; el.style.opacity=.3+hp[i]*.23; el.style.transform=`scale(${.7+hp[i]*.1})`;
+    tone(700+rand(-80,80),.05,'sine',.05);
+    if(hp[i]<=0){el.classList.add('clean');el.textContent='🫧';el.style.opacity=1;el.style.transform='';left--;if(left===0) rinse()}
+  }
+  area.addEventListener('pointerdown',e=>{e.preventDefault();down=true;moves=0;hit(e.target)});
+  area.addEventListener('pointermove',e=>{if(!down) return; moves++; if(moves%5===0) hit(document.elementFromPoint(e.clientX,e.clientY))});
+  const up=()=>{down=false};
+  area.addEventListener('pointerup',up); area.addEventListener('pointerleave',up); area.addEventListener('pointercancel',up);
+  function rinse(){
+    mgHelp('Fint! Nu ska tvålen sköljas bort.');
+    $('#mgRow').insertAdjacentHTML('afterbegin','<button class="btn big" id="tR">🚿 Skölj</button>');
+    $('#tR').onclick=()=>{
+      if(!mgLive(me)) return; $('#tR').remove(); area.classList.add('rinse'); tone(300,.6,'sine',.06);
+      setTimeout(()=>{if(!mgLive(me)) return; area.querySelectorAll('.spot').forEach(s=>s.remove()); mgWin(me,1,`${d.def.name} är skinande ren!`)},1100);
+    };
+  }
+}
+
+/* Lek: kasta bollen när pinnen är vid hunden */
+function miniLek(a,d,me){
+  const N=3; let round=0, hits=0, pos=0, dir=1, run=false, last=0, zone=null;
+  a.innerHTML=`<div class="field"><div class="zone" id="lZ"></div><div class="tdog" id="lD">${dogSVG(d.def,d.collar)}</div><div class="needle" id="lN"></div><div class="tball" id="lB">🎾</div></div>
+    <div class="dots mgdots">${'<i></i>'.repeat(N)}</div>
+    <div class="row" style="justify-content:center;margin-top:4px"><button class="btn big" id="lT">Kasta 🎾</button></div>`;
+  mgHelp(`Tryck på Kasta när den rosa pinnen är vid ${d.def.name}.`);
+  const btn=a.querySelector('#lT');
+  function newRound(){
+    if(!mgLive(me)) return;
+    zone={l:rand(26,70),w:22};
+    $('#lZ').style.left=zone.l+'%'; $('#lZ').style.width=zone.w+'%';
+    $('#lD').style.left=(zone.l+zone.w/2)+'%';
+    const b=$('#lB'); b.style.transition='none'; b.style.left='4%'; b.style.top='100px';
+    pos=0; dir=1; run=true; btn.disabled=false; last=performance.now(); requestAnimationFrame(loop);
+  }
+  function loop(now){
+    if(!run||!mgLive(me)) return;
+    const dt=Math.min(.05,(now-last)/1000); last=now;
+    pos+=dir*60*dt; if(pos>100){pos=100;dir=-1} if(pos<0){pos=0;dir=1}
+    $('#lN').style.left=pos+'%'; requestAnimationFrame(loop);
+  }
+  btn.onclick=()=>{
+    if(!run||!mgLive(me)) return; run=false; btn.disabled=true;
+    const ok=pos>=zone.l&&pos<=zone.l+zone.w;
+    const b=$('#lB'); void b.offsetWidth; b.style.transition='left .5s ease-out, top .5s ease-in';
+    b.style.left=pos+'%'; b.style.top=ok?'55px':'112px';
+    round++;
+    setTimeout(()=>{
+      if(!mgLive(me)) return;
+      if(ok){hits++; const dg=$('#lD'); dg.classList.remove('catch'); void dg.offsetWidth; dg.classList.add('catch'); mgStatus(pick(['Fångad!','Vilken fångst!','Snyggt kast!'])); tone(880,.12,'triangle',.1)}
+      else mgStatus(`Bollen hamnade bredvid. ${d.def.name} hämtar den ändå!`);
+      mgDots(round);
+      if(round>=N) setTimeout(()=>mgWin(me,.4+.2*hits,hits===3?`Tre fångster! ${d.def.name} är jätteglad.`:`${d.def.name} fångade ${hits} av 3. Vad roligt ni hade!`),700);
+      else setTimeout(newRound,900);
+    },520);
+  };
+  newRound();
+}
+
+/* Vila: klappa lugnt och sakta tills hunden somnar */
+function miniVila(a,d,me){
+  const N=6, notes=[523,494,440,392,349,330]; let calm=0, last=0, fast=0;
+  a.innerHTML=`<div class="nap" id="vN"><div class="ndog">${dogSVG(d.def,d.collar)}</div></div><div class="calm"><i id="vC"></i></div>`;
+  mgHelp(`Klappa ${d.def.name} lugnt och sakta. Tryck, vänta lite, tryck igen.`);
+  const box=a.querySelector('#vN');
+  box.addEventListener('click',e=>{
+    if(!mgLive(me)) return;
+    const now=performance.now(), r=box.getBoundingClientRect();
+    const h=document.createElement('div'); h.className='pat';
+    h.style.left=(e.clientX-r.left-13)+'px'; h.style.top=(e.clientY-r.top-13)+'px';
+    if(last&&now-last<600){fast++; calm=Math.max(0,calm-1); h.textContent='❗'; mgStatus('Oj, för snabbt! Lugnt och sakta.'); tone(300,.08,'square',.04)}
+    else{calm++; h.textContent='💜'; mgStatus(''); tone(notes[Math.min(calm-1,5)],.5,'sine',.08)}
+    last=now; box.appendChild(h); setTimeout(()=>h.remove(),1200);
+    $('#vC').style.width=(calm/N*100)+'%';
+    if(calm>=N){box.classList.add('sleep'); box.insertAdjacentHTML('beforeend','<div class="pat" style="left:62%;top:12%;font-weight:700;color:#22324a">z z z</div>'); mgWin(me,Math.max(.5,1-.1*fast),`${d.def.name} somnade. Sov gott!`)}
+  });
+}
+
+/* ---------- Bygga ---------- */
+function openBuild(after){
+  const p=P();
+  const c=showModal(`<h2>Bygg ut dagiset</h2><p>Du har <b>${p.stars} ⭐</b>. Stjärnor får du när ägarna hämtar glada hundar.</p>
+    <div class="items">${MODULES.map(m=>{const own=hasMod(m.id);return `<div class="item ${own?'own':''}"><div class="ic">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>
+      <button data-mod="${m.id}" ${own||p.stars<m.price?'disabled':''}>${own?'Byggd ✓':'Bygg för '+m.price+' ⭐'}</button></div>`}).join('')}</div>
+    <div class="row">${p.modules.length?'<button class="btn ghost" id="bMove">Flytta något</button>':''}<button class="btn" data-close>Klar</button></div>`,{onClose:after});
+  c.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>{const m=MOD(b.dataset.mod); if(P().stars<m.price) return; startPlace({mode:'new',id:m.id,cost:m.price,after})});
+  const mv=c.querySelector('#bMove'); if(mv) mv.onclick=()=>startPlace({mode:'pick',after});
+}
+function hideModalOnly(){modal.classList.add('hidden');modal.innerHTML='';modalOpt=null;TR=null;AG=null}
+function startPlace(opt){
+  hideModalOnly(); deselect(); G.paused=true;
+  PL={...opt,x:0,y:0,ok:false,idx:null,ghost:null};
+  scene.classList.add('building'); $('#buildbar').classList.remove('hidden');
+  if(PL.mode==='pick'){$('#bbText').textContent='Tryck på det du vill flytta.';$('#bbOk').classList.add('hidden')}
+  else{makeGhost();setGhost((PLOT.x1+PLOT.x2)/2,(PLOT.y1+PLOT.y2)/2)}
+}
+function makeGhost(){
+  const m=MOD(PL.id);
+  const g=document.createElement('div'); g.id='ghost'; g.style.width=m.w+'px'; g.style.height=m.h+'px'; g.innerHTML=modSVG(PL.id);
+  scene.appendChild(g); PL.ghost=g;
+  $('#bbOk').classList.remove('hidden'); $('#bbOk').textContent=PL.mode==='move'?'Flytta hit':'Bygg här';
+}
+function canPlace(id,x,y,ignore){
+  const m=MOD(id), a={x1:x-m.w/2,x2:x+m.w/2,y1:y-m.h/2,y2:y+m.h/2};
+  if(a.x1<PLOT.x1-6||a.x2>PLOT.x2+6||a.y1<PLOT.y1-6||a.y2>PLOT.y2+6) return false;
+  if(a.x2>870&&a.y1<385&&a.y2>285) return false;
+  if(a.x1<640&&a.y1<340&&a.y2>260) return false;
+  return P().modules.every((o,i)=>{if(i===ignore) return true; const q=MOD(o.id);
+    return a.x2+8<o.x-q.w/2||a.x1-8>o.x+q.w/2||a.y2+8<o.y-q.h/2||a.y1-8>o.y+q.h/2});
+}
+function setGhost(x,y){
+  const m=MOD(PL.id);
+  x=Math.round(Math.min(PLOT.x2-m.w/2,Math.max(PLOT.x1+m.w/2,x))/10)*10;
+  y=Math.round(Math.min(PLOT.y2-m.h/2,Math.max(PLOT.y1+m.h/2,y))/10)*10;
+  PL.x=x; PL.y=y; PL.ok=canPlace(PL.id,x,y,PL.idx);
+  PL.ghost.style.left=x+'px'; PL.ghost.style.top=y+'px'; PL.ghost.classList.toggle('bad',!PL.ok);
+  $('#bbOk').disabled=!PL.ok;
+  $('#bbText').textContent=PL.ok?`Tryck på gården för att välja plats. Tryck sedan på ${PL.mode==='move'?'Flytta hit':'Bygg här'}.`
+    :'Det får inte plats här. Tryck på en annan plats på gården.';
+}
+function scenePt(e){const r=scene.getBoundingClientRect(), s=r.width/W; return {x:(e.clientX-r.left)/s,y:(e.clientY-r.top)/s}}
+function placeClick(e){
+  if(PL.mode==='pick'){
+    const el=e.target.closest('.mod'); if(!el) return;
+    const i=+el.dataset.mi, m=P().modules[i];
+    PL.mode='move'; PL.idx=i; PL.id=m.id; el.classList.add('lift');
+    makeGhost(); setGhost(m.x,m.y); return;
+  }
+  const pt=scenePt(e); setGhost(pt.x,pt.y);
+}
+function endPlace(){
+  if(!PL) return; const after=PL.after;
+  if(PL.ghost) PL.ghost.remove();
+  scene.classList.remove('building'); $('#buildbar').classList.add('hidden');
+  PL=null; renderMods(); G.paused=false;
+  if(after) after();
+}
+$('#bbOk').onclick=()=>{
+  if(!PL||!PL.ok) return; const p=P();
+  if(PL.mode==='new'){p.stars-=PL.cost;p.modules.push({id:PL.id,x:PL.x,y:PL.y})}
+  else if(PL.mode==='move'){p.modules[PL.idx]={...p.modules[PL.idx],x:PL.x,y:PL.y}}
+  persist(); updateHUD(); sHappy(); float(PL.x,PL.y-30,PL.mode==='new'?'Byggt! 🎉':'Flyttat!');
+  endPlace();
+};
+$('#bbCancel').onclick=()=>endPlace();
+
+/* ---------- Agility (minispel) ---------- */
+function openAgility(d){
+  deselect();
+  const HS=[28,54,80];
+  showModal(`<div class="train"><h2>Agility med ${esc(d.def.name)}</h2>
+    <p>Tryck på <b>Hoppa!</b> när ${esc(d.def.name)} kommer fram till ett hinder.</p>
+    <div class="ag-track" id="agT">${HS.map((x,i)=>`<div class="ag-h" data-h="${i}" style="left:${x}%"></div>`).join('')}<div class="ag-flag">🏁</div>
+      <div class="ag-dog" id="agD"><div class="agf">${dogSVG(d.def,d.collar)}</div></div></div>
+    <div class="status" id="agS">Klara, färdiga …</div>
+    <div class="row" style="justify-content:center" id="agRow"><button class="btn ag-jump" id="agJ">Hoppa!</button></div></div>`);
+  AG={d,H:HS,pos:4,res:[0,0,0],last:0,phase:'ready'};
+  const me=AG;
+  $('#agJ').onclick=agJump; $('#agT').onclick=agJump;
+  setTimeout(()=>{if(AG!==me) return; AG.phase='run'; $('#agS').textContent='Kör!'; AG.last=performance.now(); requestAnimationFrame(agLoop)},1100);
+}
+function agLoop(now){
+  if(!AG||AG.phase!=='run') return;
+  const dt=Math.min(.05,(now-AG.last)/1000); AG.last=now;
+  AG.pos+=13*dt;
+  AG.H.forEach((h,i)=>{if(AG.res[i]===0&&AG.pos>h+6){AG.res[i]=2;modal.querySelector(`[data-h="${i}"]`).classList.add('down');tone(180,.2,'sine',.08);$('#agS').textContent='Oj, hindret ramlade. Fortsätt!'}});
+  const el=$('#agD'); if(el) el.style.left=AG.pos+'%';
+  if(AG.pos>=95){agDone();return}
+  requestAnimationFrame(agLoop);
+}
+function agJump(e){
+  if(e) e.stopPropagation();
+  if(!AG||AG.phase!=='run') return;
+  const dog=$('#agD'); dog.classList.remove('jump'); void dog.offsetWidth; dog.classList.add('jump');
+  const i=AG.H.findIndex((h,k)=>AG.res[k]===0&&Math.abs(AG.pos-h)<=7);
+  if(i>=0){AG.res[i]=1;modal.querySelector(`[data-h="${i}"]`).classList.add('ok');tone(PADS[i].f,.2,'triangle',.12);$('#agS').textContent=pick(['Snyggt hopp!','Hopp!','Bra jobbat!'])}
+}
+function agDone(){
+  const {d,res}=AG; AG.phase='done';
+  const n=res.filter(x=>x===1).length, kr=4+3*n;
+  $('#agS').textContent=n===3?`Perfekt! ${d.def.name} klarade alla hinder! Du får ${kr} kr.`:`${d.def.name} klarade ${n} av 3 hinder. Du får ${kr} kr.`;
+  $('#agRow').innerHTML='<button class="btn" id="agOk">Klar!</button>'; $('#agOk').onclick=closeModal;
+  fulfill(d,'agility',n*6); addMoney(kr,d.x,d.y-140); if(n===3) setTimeout(sHappy,200);
+}
+
+/* ---------- Start ---------- */
+fit();
+requestAnimationFrame(t=>{last=t;requestAnimationFrame(tick)});
+if(save.current&&save.profiles[save.current]){ensureDogs(P());updateHUD();applyDecor();dayIntro()}
+else profileScreen();
+</script>
+</body>
+</html>
