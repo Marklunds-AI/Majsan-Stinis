@@ -38,7 +38,7 @@ const SPEL = [
     ikon: "🚓",
     farg: "gron",
     beskrivning: "Kör polisbilen, fånga tjuvarna – men akta djuren på vägen!",
-    styrning: "tangentbord",
+    styrning: "touch",
   },
   {
     namn: "Raketen",

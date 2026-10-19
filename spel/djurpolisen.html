@@ -89,6 +89,45 @@
             background-color: #059669;
             transform: scale(1.05);
         }
+
+        /* Pilknappar för surfplatta/mobil */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            max-height: calc(100vh - 290px);
+            max-height: calc(100dvh - 290px);
+            min-height: 300px;
+        }
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 14px;
+        }
+        .arrow-btn {
+            width: 110px;
+            height: 80px;
+            font-size: 44px;
+            font-weight: bold;
+            color: white;
+            background-color: #1d4ed8;
+            border: 4px solid #1f2937;
+            border-radius: 18px;
+            box-shadow: 0 6px 0 #1f2937;
+            cursor: pointer;
+            touch-action: none;
+        }
+        .arrow-btn.down {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1f2937;
+            background-color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +159,11 @@
         </div>
     </div>
 
+    <div id="controls">
+        <button class="arrow-btn" id="btnLeft" aria-label="Styr vänster">◀</button>
+        <button class="arrow-btn" id="btnRight" aria-label="Styr höger">▶</button>
+    </div>
+
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -145,6 +189,18 @@
         const keys = { ArrowLeft: false, ArrowRight: false };
         window.addEventListener("keydown", (e) => { if(keys.hasOwnProperty(e.key)) keys[e.key] = true; });
         window.addEventListener("keyup", (e) => { if(keys.hasOwnProperty(e.key)) keys[e.key] = false; });
+
+        // Pilknappar: håll fingret (eller musen) på knappen för att styra
+        function bindArrow(id, key) {
+            const btn = document.getElementById(id);
+            const press = (e) => { e.preventDefault(); keys[key] = true; btn.classList.add("down"); };
+            const release = () => { keys[key] = false; btn.classList.remove("down"); };
+            btn.addEventListener("pointerdown", press);
+            ["pointerup", "pointercancel", "pointerleave"].forEach(t => btn.addEventListener(t, release));
+            btn.addEventListener("contextmenu", (e) => e.preventDefault());
+        }
+        bindArrow("btnLeft", "ArrowLeft");
+        bindArrow("btnRight", "ArrowRight");
 
         function update() {
             if (isGameOver) return;
