@@ -62,15 +62,22 @@ Det är den länken du delar. 🎉
        fil: "rymdkatten.html",
        ikon: "🐱",
        farg: "lila",
+       skapare: "stini",
        beskrivning: "Styr katten genom rymden och samla stjärnor.",
-       styrning: "touch",
+       styrning: "👆 Tryck och dra",
      },
    ```
 
-   - `farg` kan vara: `gul`, `gron`, `bla`, `rosa`, `lila`, `orange`
-   - `styrning` är `touch` om spelet går att spela på surfplatta,
-     eller `tangentbord` om det kräver piltangenter.
+   - `farg` kan vara: `gul`, `gron`, `bla`, `rosa`, `lila`, `orange`, `turkos`
+   - `skapare` kan vara: `majsan`, `stini` eller `tillsammans`.
+     Den syns som en etikett i hörnet av kortet.
+   - `styrning` är en kort text om hur man styr, t.ex. `⌨️ Piltangenter`.
+   - Vill du ha en **bild på kortet** i stället för emojin? Lägg bilden i en mapp
+     som heter `bilder` och lägg till raden `bild: "bilder/rymdkatten.png",`.
 5. Klicka **Commit changes**. Efter en minut syns spelet på sidan.
+
+När spelen har olika skapare dyker det automatiskt upp knappar under sökfältet,
+så att man kan visa bara Majsans eller bara Stinis spel.
 
 > **Om sidan blir tom efter en ändring** har det oftast blivit fel med ett
 > kommatecken eller ett citattecken i `spel.js`. Jämför med blocken ovanför –

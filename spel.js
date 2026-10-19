@@ -11,11 +11,13 @@
 //
 //     namn         – spelets namn
 //     fil          – filnamnet i mappen "spel"
-//     ikon         – en emoji som syns på kortet
-//     farg         – kortets färg (välj bland: gul, gron, bla, rosa, lila, orange)
-//     beskrivning  – en kort mening om spelet
-//     styrning     – "touch" (fungerar på surfplatta/mobil och dator)
-//                    eller "tangentbord" (kräver dator med tangentbord)
+//     ikon         – en emoji som syns på kortet när det inte finns en bild
+//     bild         – (valfritt) en bild på spelet, t.ex. "bilder/rymdkatten.png"
+//                    Lägg bilden i mappen "bilder". Utan bild visas ikonen.
+//     farg         – kortets färg: gul, gron, bla, rosa, lila, orange eller turkos
+//     skapare      – vem som gjort spelet: "majsan", "stini" eller "tillsammans"
+//     beskrivning  – en kort, kul mening om spelet
+//     styrning     – kort instruktion om hur man styr, t.ex. "👆 Tryck och dra"
 //
 //  Tips: glöm inte kommatecknet efter } om fler spel följer.
 // ============================================================
@@ -29,39 +31,44 @@ const SPEL = [
     fil: "hunddagiset.html",
     ikon: "🐶",
     farg: "gul",
-    beskrivning: "Ta hand om hundarna, lär dem trix och gör ditt dagis finare.",
-    styrning: "touch",
+    skapare: "tillsammans",
+    beskrivning: "Driv ditt eget hunddagis! Ta hand om vovvarna, lär dem trix och bygg ut dagiset.",
+    styrning: "👆 Tryck och dra",
   },
   {
     namn: "Djurpolisen",
     fil: "djurpolisen.html",
     ikon: "🚓",
     farg: "gron",
-    beskrivning: "Kör polisbilen, fånga tjuvarna – men akta djuren på vägen!",
-    styrning: "touch",
+    skapare: "tillsammans",
+    beskrivning: "Tuta och kör! Fånga tjuvarna – men akta de söta djuren på vägen.",
+    styrning: "⌨️ Piltangenter eller ◀ ▶",
   },
   {
     namn: "Raketen",
     fil: "raketen.html",
     ikon: "🚀",
     farg: "lila",
-    beskrivning: "Flyg mellan planeter och lös mattegåtor. Från förskoleklass till åk 6.",
-    styrning: "touch",
+    skapare: "tillsammans",
+    beskrivning: "Susa mellan planeter och lös mattegåtor. Från förskoleklass till åk 6.",
+    styrning: "👆 Styr med fingret",
   },
   {
     namn: "Bokstavsjakten",
     fil: "bokstavsjakten.html",
     ikon: "🔤",
-    farg: "bla",
-    beskrivning: "Spring, hoppa och fånga bubblan med rätt bokstav – eller stava ord.",
-    styrning: "touch",
+    farg: "turkos",
+    skapare: "tillsammans",
+    beskrivning: "Spring, hoppa och fånga bubblan med rätt bokstav – eller stava hela ord!",
+    styrning: "⌨️ Pilar & mellanslag eller 👆",
   },
   {
     namn: "Hundvakten",
     fil: "hundvakten.html",
     ikon: "🐕",
     farg: "rosa",
+    skapare: "tillsammans",
     beskrivning: "Mata, bada och gå på promenad med din hund. Lär den nya trix!",
-    styrning: "touch",
+    styrning: "👆 Tryck och dra",
   },
 ];

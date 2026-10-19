@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Majsan och Stinis spelhörna</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
@@ -10,74 +10,211 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* =========================================================
+   FÄRGER
+   Ljust tema: mjuk lila/blå bakgrund med knalliga accenter.
+   Mörkt tema används automatiskt om enheten är inställd på mörkt läge.
+   ========================================================= */
 :root{
-  --bg:#f3f7ff; --panel:#ffffff; --ink:#22324a; --muted:#5b6f8a; --line:#22324a;
-  --gul:#ffd84d; --gron:#7dd8a8; --bla:#8cc8ff; --rosa:#ff9fb8; --lila:#c3a6ff; --orange:#ffb066;
+  --bg-1:#f1ecff;          /* bakgrund, överst */
+  --bg-2:#e2efff;          /* bakgrund, nederst */
+  --ink:#2a2150;           /* text */
+  --muted:#6b6296;         /* dämpad text */
+  --card:#ffffff;          /* spelkort */
+  --field:#ffffff;         /* sökfält och knappar */
+  --ring:rgba(139,92,246,.35);
+  --shadow:rgba(76,52,160,.16);
+  --shadow-deep:rgba(76,52,160,.30);
+
+  /* Accentfärger */
+  --rosa:#ff5fa2;
+  --gul:#ffc23d;
+  --turkos:#1fcfc1;
+  --lila:#8b5cf6;
+  --bla:#4f8cff;
+  --gron:#34c77b;
+  --orange:#ff8a3d;
+
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+    --bg-1:#1a1538; --bg-2:#111a33; --ink:#f3f0ff; --muted:#b4acd9;
+    --card:#251f4d; --field:#2c2559; --ring:rgba(196,170,255,.45);
+    --shadow:rgba(0,0,0,.35); --shadow-deep:rgba(0,0,0,.55);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#13202f; --panel:#1d2f45; --ink:#eaf3fb; --muted:#a9bdd3; --line:#8fb3d6;
+  --bg-1:#1a1538; --bg-2:#111a33; --ink:#f3f0ff; --muted:#b4acd9;
+  --card:#251f4d; --field:#2c2559; --ring:rgba(196,170,255,.45);
+  --shadow:rgba(0,0,0,.35); --shadow-deep:rgba(0,0,0,.55);
   color-scheme:dark;
 }
-*{box-sizing:border-box}
-body{
-  margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
-  font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Segoe UI',system-ui,sans-serif;
-}
-main{max-width:1000px; margin:0 auto; padding:40px 16px 60px}
-header{text-align:center; margin-bottom:32px}
-header .logo{font-size:56px; line-height:1}
-h1{font-size:clamp(34px,6vw,52px); margin:8px 0 4px; font-weight:700}
-header p{margin:0; font-size:20px; color:var(--muted)}
 
-.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px}
+/* =========================================================
+   GRUND
+   ========================================================= */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; color:var(--ink);
+  background:linear-gradient(160deg,var(--bg-1),var(--bg-2)) fixed;
+  background-color:var(--bg-1);
+  font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Segoe UI',system-ui,sans-serif;
+  overflow-x:hidden;
+}
+
+/* Mjuka färgfläckar i bakgrunden */
+.blobs{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden}
+.blobs span{position:absolute; border-radius:50%; filter:blur(60px); opacity:.45; animation:drift 18s ease-in-out infinite alternate}
+.blobs span:nth-child(1){width:420px; height:420px; background:var(--rosa);   top:-120px; left:-100px}
+.blobs span:nth-child(2){width:380px; height:380px; background:var(--turkos); top:30%;   right:-140px; animation-delay:-6s}
+.blobs span:nth-child(3){width:340px; height:340px; background:var(--gul);    bottom:-140px; left:20%;  animation-delay:-12s}
+@keyframes drift{to{transform:translate(40px,30px) scale(1.1)}}
+
+main{max-width:1120px; margin:0 auto; padding:48px 16px 40px}
+
+/* =========================================================
+   RUBRIK
+   ========================================================= */
+header{text-align:center; margin-bottom:28px}
+.logo{display:inline-block; font-size:clamp(52px,10vw,76px); line-height:1; animation:bounce 2.8s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-10px) rotate(6deg)}}
+h1{
+  margin:10px 0 6px; font-weight:700; line-height:1.05; letter-spacing:-.01em;
+  font-size:clamp(36px,7.5vw,68px); text-wrap:balance;
+  /* Färgövergång i texten + en lekfull skugga */
+  background:linear-gradient(90deg,var(--rosa),var(--lila) 45%,var(--turkos));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 4px 0 rgba(255,194,61,.9)) drop-shadow(0 10px 18px var(--shadow));
+}
+header p{margin:0; font-size:clamp(18px,3vw,22px); color:var(--muted); font-weight:500}
+
+/* =========================================================
+   SÖK OCH FILTER
+   ========================================================= */
+.tools{display:flex; flex-direction:column; align-items:center; gap:14px; margin:0 0 32px}
+.search{position:relative; width:100%; max-width:460px}
+.search span{position:absolute; left:20px; top:50%; transform:translateY(-50%); font-size:20px; pointer-events:none}
+.search input{
+  width:100%; font:inherit; font-size:19px; color:var(--ink);
+  background:var(--field); border:3px solid transparent; border-radius:999px;
+  padding:14px 22px 14px 54px; box-shadow:0 8px 24px var(--shadow);
+  transition:border-color .2s, box-shadow .2s;
+}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none; border-color:var(--lila); box-shadow:0 0 0 6px var(--ring),0 8px 24px var(--shadow)}
+
+.filters{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
+.chip{
+  font:inherit; font-size:17px; font-weight:600; color:var(--ink); cursor:pointer;
+  background:var(--field); border:3px solid transparent; border-radius:999px; padding:8px 18px;
+  box-shadow:0 4px 12px var(--shadow); transition:transform .15s, background .2s, color .2s;
+}
+.chip:hover{transform:translateY(-2px)}
+.chip[aria-pressed="true"]{background:var(--lila); color:#fff}
+.chip:focus-visible{outline:none; box-shadow:0 0 0 5px var(--ring)}
+
+/* =========================================================
+   SPELKORT
+   ========================================================= */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:26px}
 
 .card{
-  display:flex; flex-direction:column; text-decoration:none; color:var(--ink);
-  background:var(--panel); border:3px solid var(--line); border-radius:22px; overflow:hidden;
-  box-shadow:0 6px 0 var(--line); transition:transform .12s, box-shadow .12s;
+  --c:var(--lila);                       /* kortets färg sätts per spel */
+  position:relative; display:flex; flex-direction:column;
+  text-decoration:none; color:var(--ink);
+  background:var(--card); border-radius:30px; padding:12px;
+  box-shadow:0 10px 28px var(--shadow);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+  animation:popin .5s backwards;
 }
-.card:hover{transform:translateY(-3px); box-shadow:0 9px 0 var(--line)}
-.card:active{transform:translateY(4px); box-shadow:0 2px 0 var(--line)}
-.card:focus-visible{outline:4px solid var(--rosa); outline-offset:4px}
-.card .top{
-  display:grid; place-items:center; height:140px; font-size:76px;
-  border-bottom:3px solid var(--line); background:var(--gul);
+@keyframes popin{from{opacity:0; transform:translateY(24px) scale(.96)}}
+.card:hover{transform:translateY(-8px); box-shadow:0 22px 44px var(--shadow-deep)}
+.card:active{transform:translateY(-3px) scale(.99)}
+.card:focus-visible{outline:none; box-shadow:0 0 0 6px var(--ring),0 22px 44px var(--shadow-deep)}
+
+/* Bildytan högst upp */
+.media{
+  position:relative; aspect-ratio:16/10; border-radius:22px; overflow:hidden;
+  display:grid; place-items:center;
+  background:
+    radial-gradient(circle at 25% 20%,rgba(255,255,255,.55) 0 18%,transparent 19%),
+    radial-gradient(circle at 85% 80%,rgba(255,255,255,.25) 0 22%,transparent 23%),
+    linear-gradient(135deg,color-mix(in srgb,var(--c) 55%,#fff),var(--c));
 }
-.card .body{padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1}
-.card h2{margin:0; font-size:26px; font-weight:600}
-.card p{margin:0; font-size:17px; color:var(--muted); line-height:1.35; flex:1}
-.row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px}
-.badge{font-size:14px; font-weight:500; color:var(--muted); display:flex; align-items:center; gap:5px}
+.media img{width:100%; height:100%; object-fit:cover; display:block}
+.media .emoji{font-size:84px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.18)); transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.card:hover .media .emoji{transform:scale(1.15) rotate(-8deg)}
+
+/* Skapar-etikett i hörnet */
+.author{
+  position:absolute; top:12px; left:12px;
+  background:rgba(255,255,255,.92); color:#2a2150;
+  font-size:14px; font-weight:600; padding:5px 12px; border-radius:999px;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+}
+
+/* Text och knapp */
+.body{display:flex; flex-direction:column; gap:8px; padding:16px 8px 6px; flex:1}
+.body h2{margin:0; font-size:26px; font-weight:700; line-height:1.15}
+.body p{margin:0; font-size:17px; line-height:1.4; color:var(--muted); flex:1}
+.controls{
+  align-self:flex-start; font-size:14px; font-weight:600; color:var(--ink);
+  background:color-mix(in srgb,var(--c) 16%,transparent); padding:5px 12px; border-radius:999px;
+}
 .play{
-  background:var(--gul); color:#22324a; border:3px solid var(--line); border-radius:14px;
-  padding:6px 16px; font-weight:600; font-size:18px; white-space:nowrap;
+  margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;
+  background:var(--c); color:#fff; font-size:20px; font-weight:700;
+  padding:13px 18px; border-radius:18px;
+  box-shadow:0 6px 0 color-mix(in srgb,var(--c) 70%,#000);
+  text-shadow:0 1px 2px rgba(0,0,0,.2);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+}
+.card:hover .play{transform:translateY(-4px); box-shadow:0 10px 0 color-mix(in srgb,var(--c) 70%,#000)}
+.card:active .play{transform:translateY(3px); box-shadow:0 2px 0 color-mix(in srgb,var(--c) 70%,#000)}
+
+/* Kortfärger */
+.c-gul{--c:var(--gul)} .c-gron{--c:var(--gron)} .c-bla{--c:var(--bla)} .c-rosa{--c:var(--rosa)}
+.c-lila{--c:var(--lila)} .c-orange{--c:var(--orange)} .c-turkos{--c:var(--turkos)}
+/* Gul är ljus – mörk text på knappen syns bättre */
+.c-gul .play{color:#3a2a00; text-shadow:none}
+
+.empty{text-align:center; color:var(--muted); font-size:20px; padding:30px 0}
+.hidden{display:none !important}
+
+/* =========================================================
+   LJUDKNAPP OCH SIDFOT
+   ========================================================= */
+.sound{
+  position:fixed; top:14px; right:14px; z-index:5;
+  width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
+  font-size:24px; background:var(--field); box-shadow:0 6px 18px var(--shadow);
+  transition:transform .15s;
+}
+.sound:hover{transform:scale(1.08)}
+.sound:focus-visible{outline:none; box-shadow:0 0 0 5px var(--ring)}
+footer{text-align:center; color:var(--muted); font-size:16px; padding:40px 16px 24px}
+
+/* Mindre skärmar */
+@media (max-width:520px){
+  main{padding-top:64px}
+  .grid{gap:20px}
 }
 
-.c-gul .top,.c-gul .play{background:var(--gul)}
-.c-gron .top,.c-gron .play{background:var(--gron)}
-.c-bla .top,.c-bla .play{background:var(--bla)}
-.c-rosa .top,.c-rosa .play{background:var(--rosa)}
-.c-lila .top,.c-lila .play{background:var(--lila)}
-.c-orange .top,.c-orange .play{background:var(--orange)}
-
-.search{display:flex; justify-content:center; margin:-8px 0 28px}
-.search input{
-  width:100%; max-width:420px; font:inherit; font-size:19px; color:var(--ink);
-  background:var(--panel); border:3px solid var(--line); border-radius:999px; padding:10px 20px;
+/* Respektera om någon har valt "minska rörelse" */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
 }
-.search input:focus-visible{outline:4px solid var(--rosa); outline-offset:2px}
-.empty{text-align:center; color:var(--muted); font-size:19px; padding:30px 0}
-.hidden{display:none}
 </style>
 </head>
 <body>
+
+<div class="blobs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<button class="sound" id="ljudknapp" aria-label="Stäng av ljud">🔊</button>
+
 <main>
   <header>
     <div class="logo" aria-hidden="true">🎮</div>
@@ -85,68 +222,188 @@ header p{margin:0; font-size:20px; color:var(--muted)}
     <p id="underrubrik"></p>
   </header>
 
-  <div class="search hidden" id="sokruta">
-    <input type="search" id="sok" placeholder="🔍 Sök efter ett spel…" aria-label="Sök efter ett spel">
+  <div class="tools">
+    <label class="search">
+      <span aria-hidden="true">🔍</span>
+      <input type="search" id="sok" placeholder="Sök efter ett spel…" aria-label="Sök efter ett spel" autocomplete="off">
+    </label>
+    <div class="filters" id="filter" role="group" aria-label="Visa spel gjorda av"></div>
   </div>
 
   <div class="grid" id="lista"></div>
-  <p class="empty hidden" id="tom">Inga spel matchar din sökning.</p>
+  <p class="empty hidden" id="tom">Hittade inga spel 🙈 Prova att söka på något annat!</p>
 </main>
+
+<footer>Gjort med 💜 av Majsan och Stini</footer>
 
 <!-- Listan med spel finns i filen spel.js -->
 <script src="spel.js"></script>
 <script>
-  const FARGER = ["gul","gron","bla","rosa","lila","orange"];
-  const lista = document.getElementById("lista");
+/* =========================================================
+   INSTÄLLNINGAR
+   ========================================================= */
+const FARGER = ["gul","gron","bla","rosa","lila","orange","turkos"];
+const SKAPARE = {
+  majsan:      "🎨 Majsan",
+  stini:       "🚀 Stini",
+  tillsammans: "🤝 Tillsammans",
+};
 
-  document.title = SIDANS_NAMN;
-  document.getElementById("titel").textContent = SIDANS_NAMN;
-  document.getElementById("underrubrik").textContent = SIDANS_UNDERRUBRIK;
+const lista = document.getElementById("lista");
+const sok = document.getElementById("sok");
+const filterRad = document.getElementById("filter");
+let valdSkapare = "alla";
 
-  function el(tag, cls, text){
-    const e = document.createElement(tag);
-    if(cls) e.className = cls;
-    if(text) e.textContent = text;
-    return e;
+document.title = SIDANS_NAMN;
+document.getElementById("titel").textContent = SIDANS_NAMN;
+document.getElementById("underrubrik").textContent = SIDANS_UNDERRUBRIK;
+
+/* =========================================================
+   LJUD (Web Audio – inga ljudfiler behövs)
+   Webbläsare tillåter ljud först efter att man klickat/tryckt
+   någonstans, så ljudet "låses upp" vid första klicket.
+   ========================================================= */
+let ljud = null;
+let ljudPa = true;
+try { ljudPa = localStorage.getItem("spelhorna-ljud") !== "av"; } catch (e) {}
+
+function lasUppLjud(){
+  if (ljud) return;
+  try { ljud = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+addEventListener("pointerdown", lasUppLjud, { once:true });
+addEventListener("keydown", lasUppLjud, { once:true });
+
+// Spelar en kort "pop": tonen glider från 'fran' till 'till' Hz
+function pop(fran, till, langd, volym){
+  if (!ljudPa || !ljud) return;
+  if (ljud.state === "suspended") ljud.resume();
+  const t = ljud.currentTime;
+  const osc = ljud.createOscillator();
+  const gain = ljud.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(fran, t);
+  osc.frequency.exponentialRampToValueAtTime(till, t + langd);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(volym, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + langd);
+  osc.connect(gain).connect(ljud.destination);
+  osc.start(t);
+  osc.stop(t + langd + 0.02);
+}
+const hoverLjud = () => pop(520, 780, 0.08, 0.05);   // diskret
+const klickLjud = () => { pop(420, 1200, 0.14, 0.14); pop(900, 1500, 0.1, 0.06); };
+
+const ljudknapp = document.getElementById("ljudknapp");
+function visaLjudknapp(){
+  ljudknapp.textContent = ljudPa ? "🔊" : "🔇";
+  ljudknapp.setAttribute("aria-label", ljudPa ? "Stäng av ljud" : "Sätt på ljud");
+}
+ljudknapp.addEventListener("click", () => {
+  ljudPa = !ljudPa;
+  try { localStorage.setItem("spelhorna-ljud", ljudPa ? "pa" : "av"); } catch (e) {}
+  visaLjudknapp();
+  lasUppLjud();
+  klickLjud();
+});
+visaLjudknapp();
+
+/* =========================================================
+   BYGG SPELKORTEN
+   ========================================================= */
+function el(tag, klass, text){
+  const e = document.createElement(tag);
+  if (klass) e.className = klass;
+  if (text) e.textContent = text;
+  return e;
+}
+
+const kanHovra = matchMedia("(hover: hover)").matches;
+
+SPEL.forEach((spel, i) => {
+  const farg = FARGER.includes(spel.farg) ? spel.farg : FARGER[i % FARGER.length];
+  const skapare = SKAPARE[spel.skapare] ? spel.skapare : "tillsammans";
+
+  const kort = el("a", "card c-" + farg);
+  kort.href = "spel/" + spel.fil;
+  kort.style.animationDelay = (i * 70) + "ms";
+  kort.dataset.skapare = skapare;
+  kort.dataset.sok = [spel.namn, spel.beskrivning, SKAPARE[skapare]].join(" ").toLowerCase();
+
+  // Bildyta: skärmdump om den finns, annars stor emoji
+  const media = el("div", "media");
+  if (spel.bild) {
+    const img = el("img");
+    img.src = spel.bild;
+    img.alt = "";
+    img.loading = "lazy";
+    // Om bilden inte går att ladda visas emojin i stället
+    img.onerror = () => { img.remove(); media.prepend(el("span", "emoji", spel.ikon || "🎲")); };
+    media.append(img);
+  } else {
+    media.append(el("span", "emoji", spel.ikon || "🎲"));
   }
+  media.append(el("span", "author", SKAPARE[skapare]));
 
-  SPEL.forEach((spel, i) => {
-    const farg = FARGER.includes(spel.farg) ? spel.farg : FARGER[i % FARGER.length];
-    const kort = el("a", "card c-" + farg);
-    kort.href = "spel/" + spel.fil;
-    kort.dataset.sok = (spel.namn + " " + (spel.beskrivning || "")).toLowerCase();
+  // Text, styrning och knapp
+  const kropp = el("div", "body");
+  kropp.append(el("h2", "", spel.namn), el("p", "", spel.beskrivning || ""));
+  if (spel.styrning) kropp.append(el("span", "controls", spel.styrning));
+  kropp.append(el("span", "play", "Spela ▶"));
 
-    const topp = el("div", "top", spel.ikon || "🎲");
-    topp.setAttribute("aria-hidden", "true");
+  kort.append(media, kropp);
 
-    const kropp = el("div", "body");
-    kropp.append(el("h2", "", spel.namn), el("p", "", spel.beskrivning || ""));
-
-    const rad = el("div", "row");
-    const badge = spel.styrning === "tangentbord"
-      ? el("span", "badge", "⌨️ Kräver tangentbord")
-      : el("span", "badge", "👆 Funkar på surfplatta");
-    rad.append(badge, el("span", "play", "Spela ▶"));
-    kropp.append(rad);
-
-    kort.append(topp, kropp);
-    lista.append(kort);
+  // Ljud vid hover (bara på enheter med mus) och klick
+  if (kanHovra) kort.addEventListener("mouseenter", hoverLjud);
+  kort.addEventListener("click", (e) => {
+    // Låt cmd/ctrl-klick öppna i ny flik som vanligt
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    lasUppLjud();
+    klickLjud();
+    setTimeout(() => { location.href = kort.href; }, 160); // hinner höra ljudet
   });
 
-  // Sökrutan visas först när det finns fler än 6 spel
-  if (SPEL.length > 6) {
-    document.getElementById("sokruta").classList.remove("hidden");
-    document.getElementById("sok").addEventListener("input", e => {
-      const q = e.target.value.trim().toLowerCase();
-      let synliga = 0;
-      for (const kort of lista.children) {
-        const visa = kort.dataset.sok.includes(q);
-        kort.classList.toggle("hidden", !visa);
-        if (visa) synliga++;
-      }
-      document.getElementById("tom").classList.toggle("hidden", synliga > 0);
+  lista.append(kort);
+});
+
+/* =========================================================
+   FILTER PÅ SKAPARE
+   Knapparna visas bara om spelen har olika skapare.
+   ========================================================= */
+const finns = [...new Set(SPEL.map(s => SKAPARE[s.skapare] ? s.skapare : "tillsammans"))];
+if (finns.length > 1) {
+  const val = [["alla", "✨ Alla spel"], ...Object.keys(SKAPARE).filter(k => finns.includes(k)).map(k => [k, SKAPARE[k]])];
+  val.forEach(([nyckel, text]) => {
+    const knapp = el("button", "chip", text);
+    knapp.type = "button";
+    knapp.setAttribute("aria-pressed", nyckel === valdSkapare);
+    knapp.addEventListener("click", () => {
+      valdSkapare = nyckel;
+      filterRad.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === knapp));
+      if (kanHovra) hoverLjud();
+      filtrera();
     });
+    filterRad.append(knapp);
+  });
+} else {
+  filterRad.classList.add("hidden");
+}
+
+/* =========================================================
+   SÖK
+   ========================================================= */
+function filtrera(){
+  const q = sok.value.trim().toLowerCase();
+  let synliga = 0;
+  for (const kort of lista.children) {
+    const visa = kort.dataset.sok.includes(q) && (valdSkapare === "alla" || kort.dataset.skapare === valdSkapare);
+    kort.classList.toggle("hidden", !visa);
+    if (visa) synliga++;
   }
+  document.getElementById("tom").classList.toggle("hidden", synliga > 0);
+}
+sok.addEventListener("input", filtrera);
 </script>
 </body>
 </html>
