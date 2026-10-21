@@ -122,15 +122,16 @@ Vill du byta namn på hela sidan? Ändra `SIDANS_NAMN` högst upp i `spel.js`.
        namn: "Kladdkaka",
        bild: "recept/kladdkaka.jpg",
        antal: "8 bitar",
-       svarighet: 2,
        smarrighet: 5,
        kommentar: "Godast med grädde!",
        tillagd: "2026-11-02",
      },
    ```
 
-   - `svarighet` och `smarrighet` är Majsans betyg, 0–5 bakslevar.
+   - `smarrighet` är Majsans betyg, 0–5 bakslevar.
      Halva går bra – skriv med **punkt**: `3.5`, inte `3,5`.
+     Har hon inte bakat receptet än? Ta bort raden, så står det
+     "Inte provsmakat än" tills betyget kommer.
    - `kommentar` är valfri. Den visas som ett citat från Majsan.
    - `tillagd` ger receptet ett **✨ Nytt!**-märke i 30 dagar.
 5. Klicka **Commit changes**. Efter en minut syns receptet.

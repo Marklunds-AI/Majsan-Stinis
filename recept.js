@@ -12,9 +12,10 @@
 //     namn         – receptets namn
 //     bild         – receptbilden, t.ex. "recept/kladdkaka.jpg"
 //     antal        – (valfritt) hur mycket det blir, t.ex. "ca 20 kakor"
-//     svarighet    – Majsans betyg för hur svårt det är, 0–5 bakslevar
 //     smarrighet   – Majsans betyg för hur gott det är, 0–5 bakslevar
-//                    (halva går bra, t.ex. 3.5 – använd punkt, inte komma)
+//                    (halva går bra, t.ex. 3.5 – använd punkt, inte komma).
+//                    Ta bort raden om Majsan inte har bakat receptet än –
+//                    då står det "Inte provsmakat än" på kortet.
 //     kommentar    – (valfritt) vad Majsan tycker, t.ex. "Bäst med mycket sylt!"
 //     tillagd      – (valfritt) dagen receptet kom in, t.ex. "2026-11-02".
 //                    Då får kortet ett "✨ Nytt!"-märke i 30 dagar.
@@ -24,10 +25,15 @@
 
 const RECEPT = [
   {
+    namn: "Supergoda chokladbollar",
+    bild: "recept/chokladbollar.jpg",
+    antal: "ca 20 st",
+    tillagd: "2026-10-21",
+  },
+  {
     namn: "Supergoda hallongrottor",
     bild: "recept/hallongrottor.jpg",
     antal: "ca 20 kakor",
-    svarighet: 4,
     smarrighet: 3.5,
     tillagd: "2026-10-21",
   },

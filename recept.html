@@ -148,8 +148,8 @@ header p{margin:0; font-size:clamp(18px,3vw,22px); color:var(--muted); font-weig
 .slev svg{position:absolute; inset:0; width:22px; height:28px}
 .slev .bas{color:var(--slev-tom)}
 .slev .fyll{color:var(--c); clip-path:inset(0 calc(100% - var(--fyll)) 0 0)}
-.r-svar{--c:var(--orange)}
 .r-smar{--c:var(--rosa)}
+.rating.vantar{background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--c) 8%,transparent) 0 8px,color-mix(in srgb,var(--c) 15%,transparent) 8px 16px)}
 
 .open{
   margin-top:6px; display:flex; align-items:center; justify-content:center; gap:8px;
@@ -279,8 +279,14 @@ function visaBetyg(text, ikon, betyg, klass){
 
 function betygsruta(r){
   const ruta = document.createDocumentFragment();
-  if (r.svarighet != null) ruta.append(visaBetyg("Svårighet", "💪", r.svarighet, "r-svar"));
-  if (r.smarrighet != null) ruta.append(visaBetyg("Smarrighet", "😋", r.smarrighet, "r-smar"));
+  if (r.smarrighet != null) {
+    ruta.append(visaBetyg("Smarrighet", "😋", r.smarrighet, "r-smar"));
+  } else {
+    // Inte bakat än – visa att betyget kommer
+    const rad = el("div", "rating r-smar vantar");
+    rad.append(el("span", "label", "😋 Smarrighet"), el("span", "score", "Inte provsmakat än 🤞"));
+    ruta.append(rad);
+  }
   return ruta;
 }
 
