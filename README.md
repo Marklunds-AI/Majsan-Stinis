@@ -13,6 +13,9 @@ Den här guiden visas också på GitHub, så du kan alltid gå tillbaka hit.
 | `bilder/` | Bilderna på spelkorten | Ja – om nya spel ska ha bild |
 | `tillbaka.js` | Hem-knappen 🏠 som finns i alla spel | Nej |
 | `ikoner/`, `manifest.json` | App-ikonen när sidan läggs på hemskärmen | Nej |
+| `recept.html` | Sidan med Majsans recept | Nej |
+| `recept.js` | **Listan med recept** och Majsans betyg | **Ja – när ni lägger till recept** |
+| `recept/` | Receptbilderna | Ja – lägg nya receptbilder här |
 | `README.md` | Den här guiden | Nej |
 
 ---
@@ -102,6 +105,37 @@ så att man kan visa bara Majsans eller bara Stinis spel.
 > varje rad slutar med `,` och varje block slutar med `},`.
 
 Vill du byta namn på hela sidan? Ändra `SIDANS_NAMN` högst upp i `spel.js`.
+
+---
+
+## Del 3: Lägg till ett nytt recept 🧁
+
+1. **Ge receptbilden ett enkelt namn**, t.ex. `kladdkaka.jpg`
+   (små bokstäver, inga mellanslag, inga å/ä/ö).
+2. **Ladda upp bilden:** gå till ditt repository på GitHub → klicka på mappen **recept**
+   → **Add file** → **Upload files** → dra in bilden → **Commit changes**.
+3. **Lägg till receptet i listan:** klicka på **recept.js** → pennan ✏️ (Edit).
+4. Kopiera blocket och klistra in det **överst** i listan, direkt efter `const RECEPT = [`:
+
+   ```js
+     {
+       namn: "Kladdkaka",
+       bild: "recept/kladdkaka.jpg",
+       antal: "8 bitar",
+       svarighet: 2,
+       smarrighet: 5,
+       kommentar: "Godast med grädde!",
+       tillagd: "2026-11-02",
+     },
+   ```
+
+   - `svarighet` och `smarrighet` är Majsans betyg, 0–5 bakslevar.
+     Halva går bra – skriv med **punkt**: `3.5`, inte `3,5`.
+   - `kommentar` är valfri. Den visas som ett citat från Majsan.
+   - `tillagd` ger receptet ett **✨ Nytt!**-märke i 30 dagar.
+5. Klicka **Commit changes**. Efter en minut syns receptet.
+
+Det enklaste är förstås att skicka bilden och betygen till Claude. 😊
 
 ---
 

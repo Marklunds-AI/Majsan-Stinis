@@ -81,7 +81,20 @@ body{
 .blobs span:nth-child(3){width:340px; height:340px; background:var(--gul);    bottom:-140px; left:20%;  animation-delay:-12s}
 @keyframes drift{to{transform:translate(40px,30px) scale(1.1)}}
 
-main{max-width:1120px; margin:0 auto; padding:48px 16px 40px}
+main{max-width:1120px; margin:0 auto; padding:32px 16px 40px}
+
+/* =========================================================
+   MENY: Spel / Recept
+   ========================================================= */
+.nav{display:flex; justify-content:center; margin-bottom:22px}
+.nav div{display:flex; gap:6px; padding:6px; background:var(--field); border-radius:999px; box-shadow:0 6px 18px var(--shadow)}
+.nav a{
+  text-decoration:none; color:var(--ink); font-weight:600; font-size:18px;
+  padding:10px 20px; border-radius:999px; transition:background .2s, transform .15s;
+}
+.nav a:hover{transform:translateY(-1px)}
+.nav a[aria-current="page"]{background:var(--lila); color:#fff}
+.nav a:focus-visible{outline:none; box-shadow:0 0 0 5px var(--ring)}
 
 /* =========================================================
    RUBRIK
@@ -242,6 +255,13 @@ footer{text-align:center; color:var(--muted); font-size:16px; padding:40px 16px 
 <button class="sound" id="ljudknapp" aria-label="Stäng av ljud">🔊</button>
 
 <main>
+  <nav class="nav" aria-label="Meny">
+    <div>
+      <a href="./" aria-current="page">🎮 Spel</a>
+      <a href="recept.html">🧁 Majsans recept</a>
+    </div>
+  </nav>
+
   <header>
     <div class="logo" aria-hidden="true">🎮</div>
     <h1 id="titel">Majsan och Stinis spelhörna</h1>
