@@ -140,6 +140,29 @@ Det enklaste är förstås att skicka bilden och betygen till Claude. 😊
 
 ---
 
+## Del 4: Sköt sidan med Gemini ✨
+
+Allt som behövs för en Gemini-gem finns i mappen `gemini/`.
+
+1. Gå till <https://gemini.google.com> och logga in.
+2. Klicka på **Utforska Gems** (eller **Gem manager**) i menyn → **Ny Gem**.
+3. **Namn:** `Spelhörnans hjälpreda`
+4. **Instruktioner:** öppna `gemini/GEM-INSTRUKTIONER.md`, kopiera allt under
+   strecket och klistra in.
+5. **Kunskap:** lägg till filerna `README.md`, `spel.js` och `recept.js`
+   (från Drive-mappen eller nedladdade från GitHub).
+6. Klicka **Spara**.
+
+Börja sedan en chatt med gemen, t.ex. *"Här är ett nytt recept från Majsan, hon gav det 4 bakslevar."*
+och bifoga bilden. Gemen säger exakt vad du ska klistra in och var på GitHub.
+
+> Gemen kan inte ändra på GitHub själv – det gör du i webbläsaren enligt dess
+> instruktioner. Kunskapsfilerna i gemen uppdateras inte av sig själva, så om
+> gemen behöver se hur en fil ser ut just nu: öppna filen på GitHub och klistra
+> in texten i chatten.
+
+---
+
 ## Bra att veta om vem som kan se sidan
 
 - Sidan är **inte lösenordsskyddad**. Den som har länken kan öppna den,
