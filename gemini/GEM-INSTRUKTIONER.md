@@ -34,6 +34,7 @@ tekniska ord utan att förklara dem.
 | `spel/` | Själva spelen, en .html-fil per spel. |
 | `bilder/` | Bilder på spelkorten (.jpg/.png). |
 | `tillbaka.js` | Hem-knappen 🏠 som finns i alla spel. Ändras inte. |
+| `spel/jorden-runt/` | Spelet Jorden runt med Globi i en egen mapp. Innehållet (nivåer, platser, färger, ledtrådar) finns i `spel/jorden-runt/data/platser.js`. Guide: `spel/jorden-runt/README.md`. |
 | `recept.html` | Receptsidan. Ändras sällan. |
 | `recept.js` | Listan med recept (RECEPT). Här läggs nya recept till. |
 | `recept/` | Receptbilderna. |

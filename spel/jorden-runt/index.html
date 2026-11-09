@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Jorden runt med Globi</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+<link rel="apple-touch-icon" href="../../ikoner/ikon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e6f4ff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<main id="app">
+
+  <!-- ============ STARTSIDAN ============ -->
+  <section id="skarm-start" class="skarm skarm-scroll">
+    <button class="kugg" id="kugg" type="button" aria-label="Lärarläge">⚙️</button>
+    <div class="start-inner">
+      <h1>Jorden runt <span>med Globi</span></h1>
+      <div class="prat">
+        <span data-globi="vinka"></span>
+        <div class="bubbla"><p class="globi-text">Hej! Jag heter Globi.</p><button class="lyssna" type="button" aria-label="Lyssna igen">🔊</button></div>
+      </div>
+      <div class="kartram startkarta" id="startkarta"></div>
+      <div class="nivaval" id="nivaval"></div>
+      <button class="stor-knapp pass-knapp" id="till-pass" type="button">📘 Mitt pass</button>
+    </div>
+  </section>
+
+  <!-- ============ VÄLJ SPEL ============ -->
+  <section id="skarm-lagen" class="skarm skarm-scroll" hidden>
+    <div class="start-inner">
+      <div class="topprad">
+        <button class="rund-knapp" id="lagen-tillbaka" type="button" aria-label="Tillbaka">⬅</button>
+        <h2 id="lagen-rubrik"></h2>
+      </div>
+      <div class="prat">
+        <span data-globi=""></span>
+        <div class="bubbla"><p class="globi-text"></p><button class="lyssna" type="button" aria-label="Lyssna igen">🔊</button></div>
+      </div>
+      <div class="lagesgrid" id="lagesgrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ SPELET ============ -->
+  <section id="skarm-spel" class="skarm skarm-spel" hidden>
+    <header class="spelhuvud">
+      <button class="rund-knapp" id="spel-tillbaka" type="button" aria-label="Tillbaka till spelen">⬅</button>
+      <div class="prat liten">
+        <span data-globi=""></span>
+        <div class="bubbla"><p class="globi-text" id="spel-text"></p><button class="lyssna" type="button" aria-label="Lyssna igen">🔊</button></div>
+      </div>
+      <div class="spel-status" id="spel-status"></div>
+    </header>
+    <div class="vrid-tips" aria-hidden="true">🔄 Vrid telefonen så blir kartan större</div>
+    <div class="spelyta" id="spelyta"></div>
+  </section>
+
+  <!-- ============ SLUT PÅ RUNDAN ============ -->
+  <section id="skarm-slut" class="skarm skarm-scroll" hidden>
+    <div class="start-inner slut-inner">
+      <span data-globi="hoppa"></span>
+      <h2 id="slut-rubrik" class="globi-rubrik">Bra jobbat!</h2>
+      <div class="bubbla stor"><p class="globi-text" id="slut-text"></p><button class="lyssna" type="button" aria-label="Lyssna igen">🔊</button></div>
+      <div id="slut-stamplar"></div>
+      <div class="knapprad">
+        <button class="stor-knapp gron" id="slut-igen" type="button">🔁 Spela igen</button>
+        <button class="stor-knapp" id="slut-lagen" type="button">🎲 Välj spel</button>
+        <button class="stor-knapp" id="slut-start" type="button">🗺️ Till kartan</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PASSET ============ -->
+  <section id="skarm-pass" class="skarm skarm-scroll" hidden>
+    <div class="start-inner">
+      <div class="topprad">
+        <button class="rund-knapp" id="pass-tillbaka" type="button" aria-label="Tillbaka">⬅</button>
+        <h2>📘 Mitt pass</h2>
+      </div>
+      <div class="prat">
+        <span data-globi=""></span>
+        <div class="bubbla"><p class="globi-text"></p><button class="lyssna" type="button" aria-label="Lyssna igen">🔊</button></div>
+      </div>
+      <div class="pass" id="pass-sidor"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Första trycket: låser upp ljud och uppläsning -->
+<div class="startlager" id="startlager">
+  <span data-globi="hoppa"></span>
+  <h1>Jorden runt <span>med Globi</span></h1>
+  <button class="stor-knapp gron jattestor" id="starta" type="button">▶ Starta resan</button>
+</div>
+
+<!-- Firande när en hel nivå är klar -->
+<div class="firande" id="firande" hidden>
+  <div class="firande-ruta">
+    <span data-globi="hoppa"></span>
+    <h2>🎉 Hurra! 🎉</h2>
+    <p id="firande-text"></p>
+    <button class="stor-knapp gron" id="firande-ok" type="button">Yippie!</button>
+  </div>
+</div>
+
+<!-- Lärarläge -->
+<dialog id="installningar" class="installningar">
+  <h2>⚙️ Lärarläge</h2>
+  <p class="inst-hjalp">Välj vad eleverna ska se. Ändringarna sparas direkt i den här webbläsaren.</p>
+  <h3>Nivåer</h3>
+  <div id="inst-nivaer"></div>
+  <h3>Spellägen</h3>
+  <div id="inst-lagen"></div>
+  <h3>Tidtagning</h3>
+  <label class="inst-rad"><input type="checkbox" id="inst-tid"> Klocka i Blixtrundan (av = 15 frågor utan klocka)</label>
+  <h3>Framsteg</h3>
+  <button class="stor-knapp rod" id="inst-nollstall" type="button">🗑️ Nollställ passet och rekorden</button>
+  <p id="inst-info" class="inst-info" role="status"></p>
+  <button class="stor-knapp gron" id="inst-stang" type="button">Klar</button>
+</dialog>
+
+<div id="avisering" class="avisering-yta" aria-live="polite"></div>
+<div id="fx" aria-hidden="true"></div>
+
+<!-- Innehållet: lägg till nya nivåer och platser här -->
+<script src="data/karta.js"></script>
+<script src="data/platser.js"></script>
+<!-- Motorn -->
+<script src="js/karta.js"></script>
+<script src="js/grund.js"></script>
+<!-- Spellägena -->
+<script src="js/lagen/hitta.js"></script>
+<script src="js/lagen/pussel.js"></script>
+<script src="js/lagen/resan.js"></script>
+<script src="js/lagen/vembor.js"></script>
+<script src="js/lagen/memory.js"></script>
+<script src="js/lagen/blixt.js"></script>
+<script src="js/app.js"></script>
+<!-- Hem-knappen till spelhörnan -->
+<script src="../../tillbaka.js" data-pos="top-left" data-hem="../../"></script>
+</body>
+</html>

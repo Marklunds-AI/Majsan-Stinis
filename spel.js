@@ -84,4 +84,15 @@ const SPEL = [
     styrning: "👆 Tryck och dra",
     alder: "4–7 år",
   },
+  {
+    namn: "Jorden runt med Globi",
+    fil: "jorden-runt/index.html",
+    ikon: "🌍",
+    farg: "bla",
+    skapare: "tillsammans",
+    beskrivning: "Res jorden runt med Globi! Lär dig världsdelar och världshav och samla stämplar i passet.",
+    styrning: "👆 Tryck och dra",
+    alder: "6–9 år",
+    tillagd: "2026-11-09",
+  },
 ];

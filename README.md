@@ -10,6 +10,7 @@ Den här guiden visas också på GitHub, så du kan alltid gå tillbaka hit.
 | `index.html` | Startsidan med alla spelkort | Nej |
 | `spel.js` | **Listan med spel** (namn, ikon, beskrivning) | **Ja – när du lägger till spel** |
 | `spel/` | Mappen där själva spelfilerna ligger | Ja – lägg nya spel här |
+| `spel/jorden-runt/` | Jorden runt med Globi (ett större spel i en egen mapp, med egen guide) | Se `spel/jorden-runt/README.md` |
 | `bilder/` | Bilderna på spelkorten | Ja – om nya spel ska ha bild |
 | `tillbaka.js` | Hem-knappen 🏠 som finns i alla spel | Nej |
 | `ikoner/`, `manifest.json` | App-ikonen när sidan läggs på hemskärmen | Nej |

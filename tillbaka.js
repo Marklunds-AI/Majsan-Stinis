@@ -44,7 +44,8 @@
 
   const knapp = document.createElement("a");
   knapp.className = "hem-knapp";
-  knapp.href = "../";
+  // data-hem (valfritt): vägen till startsidan om spelet ligger i en egen mapp, t.ex. "../../"
+  knapp.href = (skript && skript.dataset.hem) || "../";
   knapp.setAttribute("aria-label", "Till spelhörnan");
   knapp.innerHTML = '<span class="hem-ikon" aria-hidden="true">🏠</span><span class="hem-text">Tryck igen för att gå hem</span>';
 

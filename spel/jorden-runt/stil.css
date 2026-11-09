@@ -1,0 +1,426 @@
+/* =========================================================
+   JORDEN RUNT MED GLOBI – utseende
+   Färgglatt men lugnt: himmelsblått, sand och mjuka accenter.
+   ========================================================= */
+:root{
+  --bg-1:#e6f4ff;
+  --bg-2:#fff4e0;
+  --ink:#24325a;
+  --muted:#5b6a8f;
+  --panel:#ffffff;
+  --vatten:#bfe3f7;
+  --land:#ece3cf;
+  --land-kant:#b9a47a;
+  --ring:rgba(79,140,255,.45);
+  --skugga:rgba(36,50,90,.14);
+  --skugga-djup:rgba(36,50,90,.26);
+  --rosa:#ff5fa2; --gul:#ffc23d; --turkos:#1fcfc1; --lila:#8b5cf6;
+  --bla:#4f8cff; --gron:#34c77b; --orange:#ff8a3d; --rod:#ef5b5b;
+  --font:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Segoe UI',system-ui,sans-serif;
+  --sa-t:env(safe-area-inset-top,0px); --sa-b:env(safe-area-inset-bottom,0px);
+  --sa-l:env(safe-area-inset-left,0px); --sa-r:env(safe-area-inset-right,0px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
+body{
+  margin:0; color:var(--ink); font-family:var(--font);
+  background:linear-gradient(170deg,var(--bg-1),var(--bg-2)) fixed; background-color:var(--bg-1);
+  -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none;
+  touch-action:manipulation; overflow-x:hidden;
+}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible{outline:4px solid var(--bla); outline-offset:3px}
+
+/* ---------- Skärmar ---------- */
+.skarm-scroll{min-height:100%; padding:calc(14px + var(--sa-t)) calc(16px + var(--sa-r)) calc(28px + var(--sa-b)) calc(16px + var(--sa-l))}
+.start-inner{max-width:1080px; margin:0 auto; display:flex; flex-direction:column; gap:16px; padding-top:54px}
+h1{
+  margin:0; text-align:center; font-weight:700; line-height:1.02; letter-spacing:-.01em;
+  font-size:clamp(34px,6.5vw,60px); color:#2a74c0;
+  text-shadow:0 3px 0 #fff, 0 6px 0 rgba(255,194,61,.85);
+}
+h1 span{color:var(--orange); white-space:nowrap}
+h2{margin:0; font-size:clamp(24px,4vw,34px)}
+
+/* ---------- Knappar ---------- */
+.stor-knapp{
+  border:none; border-radius:20px; padding:14px 24px; min-height:60px;
+  font-size:22px; font-weight:600; background:var(--panel); color:var(--ink);
+  box-shadow:0 5px 0 #cfd8ea, 0 10px 22px var(--skugga);
+  transition:transform .15s, box-shadow .15s;
+}
+.stor-knapp:active{transform:translateY(4px); box-shadow:0 1px 0 #cfd8ea, 0 4px 10px var(--skugga)}
+.stor-knapp.gron{background:var(--gron); color:#fff; box-shadow:0 5px 0 #23935a, 0 10px 22px var(--skugga)}
+.stor-knapp.rod{background:#fff0f0; color:#b02a2a; box-shadow:0 5px 0 #f1c4c4, 0 10px 22px var(--skugga)}
+.jattestor{font-size:28px; padding:18px 40px; min-height:76px; border-radius:26px}
+.rund-knapp{
+  width:56px; height:56px; flex:none; border:none; border-radius:50%;
+  background:var(--panel); font-size:24px; box-shadow:0 4px 12px var(--skugga);
+}
+.rund-knapp:active{transform:scale(.93)}
+.kugg{
+  position:fixed; top:calc(12px + var(--sa-t)); right:calc(12px + var(--sa-r)); z-index:20;
+  width:52px; height:52px; border:none; border-radius:50%; font-size:24px;
+  background:rgba(255,255,255,.85); box-shadow:0 4px 12px var(--skugga); opacity:.8;
+}
+.topprad{display:flex; align-items:center; gap:14px}
+.knapprad{display:flex; flex-wrap:wrap; gap:14px; justify-content:center}
+
+/* ---------- Globi och pratbubblan ---------- */
+.prat{display:flex; align-items:center; gap:10px}
+.globi{display:inline-block; width:92px; flex:none}
+.globi svg{display:block; width:100%; height:auto; overflow:visible}
+.globi .g-kropp{transform-origin:60px 110px; animation:andas 3.2s ease-in-out infinite}
+.globi .g-mun{transform-box:fill-box; transform-origin:center top}
+.globi.pratar .g-mun{animation:prata .22s ease-in-out infinite alternate}
+.globi.hoppa .g-kropp{animation:hoppa 1.1s ease-in-out infinite}
+.globi.vinka .g-hatt{transform-box:fill-box; transform-origin:30% 100%; animation:vinka 2.6s ease-in-out infinite}
+.globi .g-ogon{animation:blinka-ogon 4.5s infinite; transform-box:fill-box; transform-origin:center}
+@keyframes andas{50%{transform:scale(1.02,.98)}}
+@keyframes prata{to{transform:scaleY(.35)}}
+@keyframes hoppa{0%,100%{transform:translateY(0)} 40%{transform:translateY(-14px) rotate(-4deg)} 70%{transform:translateY(0) scale(1.04,.96)}}
+@keyframes vinka{0%,70%,100%{transform:rotate(0)} 78%{transform:rotate(-12deg)} 86%{transform:rotate(8deg)} 94%{transform:rotate(-6deg)}}
+@keyframes blinka-ogon{0%,94%,100%{transform:scaleY(1)} 97%{transform:scaleY(.1)}}
+
+.bubbla{
+  position:relative; flex:1; min-width:0; display:flex; align-items:center; gap:8px;
+  background:var(--panel); border-radius:22px; padding:10px 10px 10px 18px;
+  box-shadow:0 6px 18px var(--skugga);
+}
+.bubbla::before{
+  content:""; position:absolute; left:-10px; top:50%; margin-top:-10px;
+  border:10px solid transparent; border-right-color:var(--panel); border-left:0;
+}
+.bubbla p{margin:0; flex:1; font-size:clamp(19px,2.6vw,26px); font-weight:600; line-height:1.25; min-height:1.25em}
+.bubbla p.ny{animation:ny-text .35s ease-out}
+@keyframes ny-text{from{opacity:.2; transform:translateY(4px)}}
+.lyssna{
+  flex:none; width:52px; height:52px; border:none; border-radius:50%;
+  background:#eaf3ff; font-size:24px;
+}
+.lyssna:active{transform:scale(.92)}
+.bubbla.stor{max-width:640px; margin:0 auto}
+.bubbla.stor::before{display:none}
+
+/* ---------- Kartan ---------- */
+.kartram{position:relative; min-height:0}
+.kartram > svg.karta{position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block}
+.startkarta{width:min(100%, calc(48vh * 1000 / 571)); margin:0 auto; aspect-ratio:1000/571; filter:drop-shadow(0 10px 22px var(--skugga))}
+.kart-vatten{fill:var(--vatten)}
+.omr{transition:fill .35s}
+.omr.land{fill:var(--land); stroke:var(--land-kant); stroke-width:1.4px; vector-effect:non-scaling-stroke; stroke-linejoin:round}
+.omr.hav{fill:transparent}
+.visa-hav .omr.hav{stroke:rgba(255,255,255,.95); stroke-width:2.5px; stroke-dasharray:7 6; vector-effect:non-scaling-stroke}
+.omr.fargad{stroke:#fff; stroke-width:2px}
+.omr.hav.fargad{fill-opacity:.85}
+.omr.blinka{animation:blinka-omr .85s ease-in-out 3; stroke:#fff; stroke-width:3px}
+@keyframes blinka-omr{0%,100%{fill:var(--blink); fill-opacity:1} 50%{fill:var(--blink); fill-opacity:.15}}
+.omr.skaka{transform-box:fill-box; transform-origin:center; animation:skaka .5s}
+@keyframes skaka{20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)}}
+.omr.spoke{fill:rgba(255,255,255,.55); stroke:#8aa0c8; stroke-dasharray:6 5}
+.omr.puls{animation:puls-omr 1.4s ease-in-out infinite}
+@keyframes puls-omr{50%{fill-opacity:.55}}
+.startkarta-svg .omr.land{cursor:pointer}
+
+.etikett{
+  font-family:var(--font); font-size:calc(var(--fs,18) * 1px); font-weight:700;
+  fill:var(--ink); stroke:#fff; stroke-width:calc(var(--fs,18) * .22px); stroke-linejoin:round;
+  paint-order:stroke; text-anchor:middle; dominant-baseline:central; pointer-events:none;
+  animation:etikett-in .35s cubic-bezier(.34,1.56,.64,1);
+}
+.etikett.ikon-etikett{font-size:calc(var(--fs,18) * 1.5px); stroke-width:0; animation:none}
+.etikett.skylt{fill:#fff; stroke:#2a74c0; stroke-width:calc(var(--fs,18) * .32px)}
+.etikett.tillfallig{fill:#7a4b00}
+.etikett.land-namn{font-size:calc(var(--fs,18) * .8px); fill:#7d6a45; animation:none}
+@keyframes etikett-in{from{opacity:0}}
+
+.vrid-tips{display:none}
+@media (orientation:portrait) and (max-width:600px){
+  .vrid-tips{display:block; margin:0 12px 6px; text-align:center; font-size:15px; color:var(--muted)}
+}
+
+/* ---------- Startsidan ---------- */
+.nivaval{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px}
+.nivakort{
+  display:flex; align-items:center; gap:16px; text-align:left; border:none;
+  background:var(--panel); border-radius:26px; padding:16px 20px; min-height:96px;
+  box-shadow:0 6px 0 #d3dcef, 0 12px 26px var(--skugga);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.nivakort:hover{transform:translateY(-4px)}
+.nivakort:active{transform:translateY(3px)}
+.niva-ikon{font-size:52px; line-height:1}
+.niva-text{display:flex; flex-direction:column; flex:1; gap:2px}
+.niva-text small{font-size:16px; color:var(--muted); font-weight:600}
+.niva-text b{font-size:28px}
+.niva-stamplar{font-size:17px; color:var(--muted)}
+.niva-pil{font-size:26px; color:var(--gron)}
+.pass-knapp{align-self:center}
+
+/* ---------- Välj spelläge ---------- */
+.lagesgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px}
+.lageskort{position:relative; animation:pop-in .45s backwards; animation-delay:calc(var(--i) * 60ms)}
+@keyframes pop-in{from{opacity:0; transform:translateY(18px) scale(.95)}}
+.lage-huvud{
+  width:100%; height:100%; border:none; border-radius:26px; background:var(--panel);
+  display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
+  padding:22px 16px 18px; box-shadow:0 6px 0 #d3dcef, 0 12px 26px var(--skugga);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.lage-huvud:hover{transform:translateY(-4px)}
+.lage-huvud:active{transform:translateY(3px)}
+.lage-ikon{font-size:58px; line-height:1.1}
+.lage-huvud b{font-size:26px}
+.lage-beskr{font-size:17px; color:var(--muted); line-height:1.3}
+.lage-basta{margin-top:4px; font-size:16px; font-weight:600; background:#fff5d6; padding:4px 12px; border-radius:999px}
+.tomt{text-align:center; font-size:20px; color:var(--muted)}
+
+/* ---------- Spelskärmen ---------- */
+.skarm-spel{position:fixed; inset:0; display:flex; flex-direction:column; overflow:hidden;
+  padding:var(--sa-t) var(--sa-r) var(--sa-b) var(--sa-l)}
+.spelhuvud{display:flex; align-items:center; gap:10px; padding:8px 12px 8px 72px; min-height:76px; flex:none}
+.prat.liten{flex:1; min-width:0}
+.prat.liten .globi{width:64px}
+.prat.liten .bubbla{padding:6px 6px 6px 14px; border-radius:18px}
+.prat.liten .bubbla p{font-size:clamp(18px,2.4vw,25px)}
+.spel-status{flex:none; display:flex; align-items:center; gap:10px}
+.spelyta{flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; padding:0 12px 12px; position:relative}
+.spelyta > .kartram{flex:1}
+
+.prickar{display:flex; gap:6px; flex-wrap:wrap; max-width:140px}
+.prickar i{width:16px; height:16px; border-radius:50%; background:#d6e0f2; transition:background .3s, transform .3s}
+.prickar i.nu{transform:scale(1.3); background:#a8bbe0}
+.prickar i.ratt{background:var(--gron)}
+.prickar i.klar{background:var(--gul)}
+.poang{font-size:24px; font-weight:700; background:var(--panel); padding:6px 14px; border-radius:999px; box-shadow:0 4px 12px var(--skugga)}
+
+/* Blixtrundan: tidslinje */
+.tidlinje{position:relative; width:150px; height:22px; border-radius:999px; background:#d6e0f2; overflow:hidden}
+.tidlinje i{position:absolute; inset:0; background:linear-gradient(90deg,var(--gron),var(--gul)); transform-origin:left; transition:transform .25s linear}
+.tidlinje span{position:absolute; inset:0; display:grid; place-items:center; font-size:14px; font-weight:700}
+
+/* Överlägg på kartan (start-knapp, frågor under resan) */
+.overlagg{
+  position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
+  background:rgba(230,244,255,.55); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+  padding:12px;
+}
+.overlagg.nere{align-items:flex-end; background:none; -webkit-backdrop-filter:none; backdrop-filter:none; pointer-events:none}
+.overlagg.nere .fragepanel{pointer-events:auto; width:min(640px,100%); padding:12px}
+.overlagg.nere .svar-huvud .mini{max-height:18vh}
+.fragepanel{
+  background:var(--panel); border-radius:26px; padding:16px; width:min(760px,100%);
+  box-shadow:0 18px 40px var(--skugga-djup); display:flex; flex-direction:column; gap:12px;
+  animation:pop-in .35s;
+}
+.fragepanel h3{margin:0; text-align:center; font-size:clamp(22px,3vw,28px)}
+
+/* ---------- Svarskort (mini-karta + namn) ---------- */
+.svarsgrid{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.svarskort{position:relative}
+.svar-huvud{
+  width:100%; border:4px solid transparent; border-radius:22px; background:var(--panel);
+  padding:8px 8px 10px; display:flex; flex-direction:column; align-items:center; gap:6px;
+  box-shadow:0 5px 0 #d3dcef, 0 10px 22px var(--skugga); transition:transform .15s, border-color .2s;
+}
+.svar-huvud:active{transform:translateY(3px)}
+.svar-huvud .mini{width:100%; height:auto; border-radius:14px; display:block}
+.svar-namn{font-size:22px; font-weight:700; line-height:1.15}
+.svar-lyssna{
+  position:absolute; top:-8px; right:-8px; width:46px; height:46px; border:none; border-radius:50%;
+  background:#eaf3ff; font-size:20px; box-shadow:0 3px 10px var(--skugga);
+}
+.svarskort.ratt .svar-huvud{border-color:var(--gron); background:#eafff2}
+.svarskort.fel .svar-huvud{animation:skaka-kort .5s}
+.svarskort.blinka .svar-huvud{animation:blinka-kort .8s ease-in-out 3}
+@keyframes skaka-kort{20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)}}
+@keyframes blinka-kort{50%{border-color:var(--gul); background:#fff6d1; transform:scale(1.04)}}
+.mini .m-vatten{fill:#cfe9f8}
+.mini .m-land{fill:#e4dccb; stroke:#c3b08a; stroke-width:2}
+.mini .m-mark{stroke:#fff; stroke-width:3}
+
+/* ---------- Vem bor var? ---------- */
+.ledtrad{
+  display:flex; align-items:center; gap:14px; background:#fffbea; border:4px dashed #ffd36b;
+  border-radius:26px; padding:18px 18px 18px 22px; box-shadow:0 8px 20px var(--skugga);
+}
+.ledtrad .lt-ikon{font-size:44px}
+.ledtrad.ny{animation:pop-in .35s}
+.poang.pop{animation:par-pop .4s}
+.ledtrad p{margin:0; flex:1; font-size:clamp(24px,3.4vw,36px); font-weight:600; line-height:1.2}
+.lage-vembor .svarsgrid{flex:1; align-content:center; max-width:980px; width:100%; margin:0 auto}
+.lage-vembor .ledtrad{max-width:980px; width:100%; margin:0 auto}
+
+/* ---------- Kartpusslet ---------- */
+.bricka{
+  flex:none; display:flex; flex-wrap:wrap; gap:12px; padding:6px 4px 10px; min-height:104px;
+  justify-content:center;
+}
+.bit{
+  flex:none; width:118px; height:92px; border:none; border-radius:20px; background:var(--panel);
+  box-shadow:0 5px 0 #d3dcef, 0 10px 20px var(--skugga); padding:8px; touch-action:none;
+  display:flex; align-items:center; justify-content:center; animation:pop-in .4s backwards;
+}
+.bit svg{width:100%; height:100%; overflow:visible; pointer-events:none}
+.bit.dras{opacity:.25}
+.bit.skylt-bit{width:auto; min-width:150px; padding:8px 18px; font-size:21px; font-weight:700; color:#fff; background:#2a74c0; box-shadow:0 5px 0 #1b5590, 0 10px 20px var(--skugga)}
+.dras-flyt{position:fixed; z-index:50; pointer-events:none; filter:drop-shadow(0 12px 14px rgba(0,0,0,.25)); transition:none}
+.dras-flyt.tillbaka{transition:left .35s ease, top .35s ease, opacity .35s; opacity:0}
+.dras-flyt.snappa{transition:left .25s ease, top .25s ease}
+.skylt-flyt{padding:10px 20px; border-radius:16px; background:#2a74c0; color:#fff; font-size:22px; font-weight:700; white-space:nowrap}
+.bricka-klar{margin:auto; font-size:20px; color:var(--muted)}
+
+/* ---------- Resan ---------- */
+.fordon{pointer-events:none}
+.fordon .skugga{fill:rgba(0,0,0,.18)}
+.spar{fill:none; stroke:#fff; stroke-linecap:round; stroke-linejoin:round; opacity:.75; stroke-dasharray:2 7; vector-effect:non-scaling-stroke; stroke-width:3px}
+.flagga{pointer-events:none}
+.reselabel{font-family:var(--font); font-weight:700; font-size:calc(var(--fs,18) * 1px); fill:#24325a; stroke:#fff; stroke-width:calc(var(--fs,18) * .22px); paint-order:stroke; text-anchor:middle; pointer-events:none; transition:opacity .5s}
+.resa-tips{flex:none; text-align:center; color:var(--muted); font-size:16px; margin:0}
+.malmarkor{fill:none; stroke:#ff5f5f; stroke-width:3px; vector-effect:non-scaling-stroke; animation:malpuls 1.2s ease-out infinite; transform-box:fill-box; transform-origin:center}
+@keyframes malpuls{from{transform:scale(.5); opacity:1} to{transform:scale(1.6); opacity:0}}
+
+/* ---------- Memory ---------- */
+.memorygrid{flex:1; min-height:0; display:grid; gap:10px; align-content:center; justify-content:center; margin:0 auto; width:100%}
+.mkort{position:relative; perspective:800px; border:none; padding:0; background:none; aspect-ratio:4/3; width:100%}
+.mkort-inner{position:absolute; inset:0; transition:transform .45s; transform-style:preserve-3d}
+.mkort.vand .mkort-inner{transform:rotateY(180deg)}
+.mkort-sida{position:absolute; inset:0; border-radius:18px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px;
+  -webkit-backface-visibility:hidden; backface-visibility:hidden; box-shadow:0 5px 0 #d3dcef, 0 8px 16px var(--skugga); overflow:hidden}
+.mkort-bak{background:radial-gradient(circle at 30% 30%,#7cc3f5,#2a74c0); color:#fff; font-size:clamp(26px,4vw,44px)}
+.mkort-bak::after{content:""; position:absolute; inset:8px; border:3px dashed rgba(255,255,255,.5); border-radius:12px}
+.mkort-fram{background:var(--panel); transform:rotateY(180deg); padding:6px}
+.mkort-fram .mini{width:100%; height:100%}
+.mkort-fram .mk-ikon{font-size:clamp(26px,4vw,42px); line-height:1}
+.mkort-fram .mk-namn{font-size:clamp(16px,2.2vw,24px); font-weight:700; text-align:center; line-height:1.1}
+.mkort.par .mkort-fram{box-shadow:0 0 0 5px var(--gron), 0 8px 16px var(--skugga)}
+.mkort.par{animation:par-pop .5s}
+@keyframes par-pop{50%{transform:scale(1.06)}}
+
+/* ---------- Slutskärmen ---------- */
+.slut-inner{align-items:center; text-align:center}
+.slut-inner .globi{width:140px}
+.globi-rubrik{font-size:clamp(32px,6vw,52px); color:#2a74c0}
+.slut-ny{font-size:20px; font-weight:600; margin:6px 0}
+.stampelrad{display:flex; flex-wrap:wrap; gap:14px; justify-content:center}
+
+/* ---------- Stämplar och passet ---------- */
+.stampel{
+  --c:#8b5cf6; position:relative; display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+  width:104px; height:104px; border-radius:50%; transform:rotate(var(--v,0deg));
+  border:5px solid var(--c); background:color-mix(in srgb,var(--c) 14%,#fff); color:var(--ink);
+  box-shadow:inset 0 0 0 4px #fff, inset 0 0 0 6px color-mix(in srgb,var(--c) 70%,#fff);
+}
+.st-ikon{font-size:40px; line-height:1}
+.st-namn{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; max-width:86px; text-align:center; line-height:1.05; margin-top:2px}
+.stampel.tom{border:4px dashed #b9c4dc; background:#f4f7fd; box-shadow:none}
+.stampel.tom .st-ikon{color:#b9c4dc; font-weight:700}
+.pass{display:flex; flex-direction:column; gap:20px}
+.pass-sida{
+  background:#fffdf6; border-radius:26px; padding:18px 18px 22px;
+  box-shadow:0 10px 26px var(--skugga); border:3px solid #efe3c4;
+  background-image:repeating-linear-gradient(0deg,transparent 0 33px,rgba(200,180,140,.12) 33px 34px);
+}
+.pass-sida h3{margin:0 0 14px; font-size:24px}
+.pass-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:16px 10px}
+.pass-plats{border:none; background:none; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px}
+.pass-namn{font-size:18px; font-weight:600}
+.pass-datum{font-size:13px; color:var(--muted)}
+.pass-plats .stampel{animation:stampla .5s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes stampla{from{transform:scale(1.6) rotate(var(--v)); opacity:0}}
+
+/* ---------- Avisering, firande, startlager ---------- */
+.avisering-yta{position:fixed; z-index:60; top:calc(12px + var(--sa-t)); left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; pointer-events:none}
+.avisering{
+  display:flex; align-items:center; gap:14px; background:var(--panel); border-radius:24px; padding:10px 22px 10px 10px;
+  box-shadow:0 14px 32px var(--skugga-djup); font-size:20px; animation:stampla .5s cubic-bezier(.34,1.56,.64,1);
+  transition:opacity .5s, transform .5s;
+}
+.avisering .stampel{width:76px; height:76px}
+.avisering .st-ikon{font-size:30px}
+.avisering .st-namn{display:none}
+.avisering.bort{opacity:0; transform:translateY(-20px)}
+
+.firande,.startlager{
+  position:fixed; inset:0; z-index:70; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+  padding:20px; background:radial-gradient(circle at 50% 40%,#ffffff,#d9eeff);
+}
+.firande{background:rgba(36,50,90,.45)}
+.firande-ruta{background:var(--panel); border-radius:30px; padding:26px; max-width:520px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; box-shadow:0 24px 60px rgba(0,0,0,.3); animation:pop-in .5s}
+.firande-ruta .globi,.startlager .globi{width:150px}
+.firande-ruta p{font-size:24px; margin:0 0 8px}
+
+#fx{position:fixed; inset:0; z-index:80; pointer-events:none; overflow:hidden}
+.konfetti{position:absolute; top:-20px; width:12px; height:18px; border-radius:3px; animation:falla linear forwards}
+@keyframes falla{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+
+/* ---------- Lärarläge ---------- */
+.installningar{
+  border:none; border-radius:26px; padding:22px 24px; width:min(560px,94vw); max-height:90vh; overflow:auto;
+  color:var(--ink); box-shadow:0 24px 60px rgba(0,0,0,.3); -webkit-user-select:text; user-select:text;
+}
+.installningar::backdrop{background:rgba(36,50,90,.4)}
+.installningar h3{margin:18px 0 6px; font-size:19px}
+.inst-hjalp{margin:6px 0 0; color:var(--muted)}
+.inst-rad{display:flex; align-items:center; gap:10px; font-size:19px; padding:8px 0}
+.inst-rad input{width:26px; height:26px; accent-color:var(--gron)}
+.inst-info{color:#23935a; font-weight:600; min-height:1.2em}
+.installningar .stor-knapp{width:100%; margin-top:6px}
+
+/* ---------- Små skärmar ---------- */
+@media (max-width:640px){
+  .start-inner{padding-top:58px; gap:12px}
+  .globi{width:72px}
+  .spelhuvud{padding:6px 8px 6px 66px; min-height:64px; gap:6px}
+  .prat.liten .globi{width:46px}
+  .lagesgrid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+  .lage-huvud{padding:16px 8px 12px; border-radius:20px}
+  .lage-ikon{font-size:42px}
+  .lage-huvud b{font-size:20px}
+  .lage-beskr{font-size:14px}
+  .lageskort .svar-lyssna{width:40px; height:40px; font-size:17px}
+}
+/* Smal telefon på höjden: pratbubblan får en egen rad i spelet */
+@media (max-width:640px) and (orientation:portrait){
+  .spelhuvud{flex-wrap:wrap; row-gap:6px}
+  .prat.liten{order:3; flex-basis:100%; margin-left:-58px}
+  .spel-status{margin-left:auto}
+  .bubbla::before{display:none}
+  .lyssna{width:44px; height:44px; font-size:20px}
+  .rund-knapp{width:48px; height:48px; font-size:20px}
+  .spelyta{padding:0 8px 8px; gap:8px}
+  .svarsgrid{grid-template-columns:repeat(2,1fr); gap:10px}
+  .svar-namn{font-size:18px}
+  .bit{--bitb:78px; width:78px; height:64px; border-radius:16px; padding:6px}
+  .bit.skylt-bit{min-width:0; font-size:17px; padding:6px 12px}
+  .bricka{min-height:76px; gap:8px}
+  .prickar{max-width:70px; gap:4px}
+  .prickar i{width:11px; height:11px}
+  .tidlinje{width:90px}
+  .nivakort{min-height:84px}
+  .niva-ikon{font-size:42px}
+  .niva-text b{font-size:24px}
+}
+@media (max-height:520px){
+  .spelhuvud{min-height:56px; padding-top:4px; padding-bottom:4px}
+  .prat.liten .globi{width:42px}
+  .lyssna{width:42px; height:42px}
+  .rund-knapp{width:44px; height:44px}
+  .bricka{min-height:66px; padding:2px 4px 4px; gap:8px}
+  .bit{--bitb:76px; width:76px; height:58px; padding:5px; border-radius:14px}
+  .bit.skylt-bit{min-width:0; font-size:17px; padding:5px 12px}
+  .ledtrad{padding:8px 12px; border-radius:18px}
+  .ledtrad .lt-ikon{font-size:30px}
+  .ledtrad p{font-size:22px}
+  .svar-huvud{padding:5px 5px 6px; gap:2px; border-radius:16px}
+  .svar-huvud .mini{max-height:30vh}
+  .svar-namn{font-size:18px}
+  .svar-lyssna{width:38px; height:38px; font-size:16px; top:-6px; right:-6px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition:none !important}
+}
